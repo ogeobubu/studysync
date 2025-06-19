@@ -8,7 +8,7 @@
     "build": "npm run install-all && npm run build-client",
 
     "start": "node server/app.js",
-    "dev": "concurrently \"nodemon server/app.js\" \"npm run dev --prefix client\""
+    "dev": "\"nodemon server/app.js\" \"npm run dev --prefix client\""
   },
   "devDependencies": {
     "concurrently": "^8.0.0",
