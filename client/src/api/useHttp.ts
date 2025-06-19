@@ -74,7 +74,6 @@ export function useHttp<TResponse, TPayload = unknown>({
 }
 
 const handleError = (error: unknown) => {
-  console.error("Full error object:", error);
 
   if (axios.isAxiosError(error)) {
     // Check if the request was aborted due to timeout
@@ -85,7 +84,7 @@ const handleError = (error: unknown) => {
 
     // Access the error message safely via optional chaining
     const message =
-      error.response?.data?.data?.message ||
+      error.response?.data?.data?.message || error.response?.data?.data?.error ||
       (error.message
         ? error.message
         : "An error occurred. Please try again later.");

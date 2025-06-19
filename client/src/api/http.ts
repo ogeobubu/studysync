@@ -15,6 +15,7 @@ const setAuthData = (data: { token: string } | null) => {
   } else {
     delete http.defaults.headers.common["Authorization"];
     localStorage.removeItem("authData");
+    localStorage.removeItem("authToken");
   }
 };
 
@@ -28,6 +29,7 @@ const initializeAuth = () => {
     http.defaults.headers.common["Authorization"] = `Bearer ${parsedData}`;
   } catch (error) {
     localStorage.removeItem("authData");
+    localStorage.removeItem("authToken");
   }
 };
 
@@ -39,6 +41,8 @@ http.interceptors.response.use(
     if (error.response?.status === 401) {
       setAuthData(null);
       window.location.href = "/login";
+      localStorage.removeItem("authData");
+      localStorage.removeItem("authToken");
     }
     return Promise.reject(error);
   }

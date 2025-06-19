@@ -9,7 +9,9 @@ const notifications = require("./routes/notifications");
 const courseRoutes = require("./routes/courseRoutes");
 const advisingRoutes = require("./routes/advising");
 const appointmentsRoutes = require("./routes/appointments");
-const userRoutes = require('./routes/user');
+const userRoutes = require("./routes/user");
+const registrationRoute = require("./routes/registration");
+const recommendationRoute = require("./routes/recommendations");
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -32,6 +34,8 @@ const createApp = () => {
   app.use("/api/advising", advisingRoutes);
   app.use("/api/appointments", appointmentsRoutes);
   app.use("/api/users", userRoutes);
+  app.use("/api/registrations", registrationRoute);
+  app.use('/api/recommendations', recommendationRoute);
 
   // Error handling middleware (functional)
   app.use(errorHandler);

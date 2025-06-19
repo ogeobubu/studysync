@@ -11,6 +11,20 @@ export type User = {
   role: Role;
 }
 
+export type UserProfile = {
+  _id: string;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  address?: string;
+  gender?: "male" | "female" | null;
+  matricNumber?: string;
+  program?: string;
+  level?: string;
+  cgpa?: number;
+  gpa?: number;
+};
+
 export type AuthContextType = {
   user: User | null;
   token: string | null;

@@ -6,7 +6,8 @@ const {
   createCourse,
   updateCourse,
   deleteCourse,
-  getCoursesByPartAndSemester
+  getCoursesByPartAndSemester,
+  getCoursesByProgram
 } = require('../controllers/courseController');
 const { protect, authorize } = require('../middlewares/authMiddleware');
 
@@ -21,5 +22,6 @@ router.delete('/:id', protect, authorize('admin'), deleteCourse);
 
 // Route to fetch courses by part and semester
 router.get('/filter', getCoursesByPartAndSemester);
+router.get('/programs/:program', getCoursesByProgram);
 
 module.exports = router;

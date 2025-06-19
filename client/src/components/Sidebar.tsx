@@ -40,11 +40,11 @@ export default function Sidebar() {
           Academics
         </NavLink>
         <NavLink
-          to="/student/resources"
+          to="/student/recommendations"
           currentPath={location.pathname}
           icon={<LibraryBig className="h-5 w-5" />}
         >
-          Resources
+          Recommendations
         </NavLink>
         <NavLink
           to="/student/profile"

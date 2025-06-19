@@ -23,6 +23,8 @@ exports.loginUser = async (req, res, next) => {
       { expiresIn: '1h' }
     );
 
+    console.log(token)
+
     res.status(200).json({
       success: true,
       token,
