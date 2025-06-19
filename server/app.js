@@ -1,30 +1,41 @@
-const express = require('express');
-const cors = require('cors');
-const connectDB = require('./config/db');
-const authRoutes = require('./routes/auth');
-const courseRoutes = require('./routes/courses');
-const advisingRoutes = require('./routes/advising');
+const express = require("express");
+const cors = require("cors");
+const connectDB = require("./config/db");
+const path = require("path");
+const logger = require("morgan");
+const errorHandler = require("./middlewares/error");
+const authRoutes = require("./routes/auth");
+const notifications = require("./routes/notifications");
+const courseRoutes = require("./routes/courseRoutes");
+const advisingRoutes = require("./routes/advising");
+const appointmentsRoutes = require("./routes/appointments");
+const userRoutes = require('./routes/user');
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const createApp = () => {
   const app = express();
-  
+
   app.use(cors());
+  app.use(logger("dev"));
   app.use(express.json());
-  
+  app.use(express.urlencoded({ extended: false }));
+
   // Connect to database
   connectDB(process.env.MONGO_URI);
-  
+
   // Routes
-  app.use('/api/auth', authRoutes);
-  app.use('/api/courses', courseRoutes);
-  app.use('/api/advising', advisingRoutes);
-  
+  app.use("/api/auth", authRoutes);
+  app.use("/api/notifications", notifications);
+  app.use("/api/courses", courseRoutes);
+  app.use("/api/advising", advisingRoutes);
+  app.use("/api/appointments", appointmentsRoutes);
+  app.use("/api/users", userRoutes);
+
   // Error handling middleware (functional)
-  app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: 'Something broke!' });
-  });
-  
+  app.use(errorHandler);
+
   return app;
 };
 

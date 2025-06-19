@@ -1,27 +1,15 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { checkPrerequisites, generateRecommendations } = require('../services/advisingService');
-const authenticate = require('../middlewares/authenticate');
+const {
+  createAdvisingRequest,
+  getAllAdvisingRequests,
+  getStudentAdvisingRequests,
+} = require("../controllers/advisingController");
+const { protect, authorize } = require("../middlewares/authMiddleware");
 
-const handlePrerequisiteCheck = async (req, res) => {
-  try {
-    const result = await checkPrerequisites(req.user.id, req.params.courseCode);
-    res.json(result);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+router.post("/request", protect, authorize("student"), createAdvisingRequest);
+router.get("/my", protect, authorize("student"), getStudentAdvisingRequests);
 
-const handleRecommendations = async (req, res) => {
-  try {
-    const recommendations = await generateRecommendations(req.user.id);
-    res.json(recommendations);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
-
-router.get('/prerequisites/:courseCode', authenticate, handlePrerequisiteCheck);
-router.get('/recommendations', authenticate, handleRecommendations);
+router.get("/", protect, authorize("advisor"), getAllAdvisingRequests);
 
 module.exports = router;

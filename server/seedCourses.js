@@ -1,0 +1,238 @@
+const mongoose = require('mongoose');
+const Course = require('./models/Course');
+const dotenv = require("dotenv");
+
+dotenv.config();
+
+const courses = [
+  {
+    code: 'CSC 101',
+    title: 'Introduction to Computer Science',
+    level: 'Part I',
+    programs: ['Computer Science', 'Computer Science with Mathematics', 'Computer Science with Economics'],
+    credits: 3,
+    prerequisites: [],
+    isElective: false,
+    description: 'Basics of computer science.',
+    semester: 'First',
+  },
+  {
+    code: 'MTH 101',
+    title: 'Calculus I',
+    level: 'Part I',
+    programs: ['Computer Science', 'Computer Science with Mathematics'],
+    credits: 4,
+    prerequisites: [],
+    isElective: false,
+    description: 'Introduction to calculus concepts.',
+    semester: 'First',
+  },
+  {
+    code: 'ECO 101',
+    title: 'Principles of Economics',
+    level: 'Part I',
+    programs: ['Computer Science with Economics', 'Computer Science'],
+    credits: 3,
+    prerequisites: [],
+    isElective: true,
+    description: 'Fundamentals of economic principles.',
+    semester: 'First',
+  },
+ {
+    code: 'CSC 102',
+    title: 'Programming Fundamentals',
+    level: 'Part I',
+    programs: ['Computer Science', 'Computer Science with Mathematics'],
+    credits: 3,
+    prerequisites: [],
+    isElective: false,
+    description: 'Introduction to programming concepts using a high-level language.',
+    semester: 'First',
+  },
+  {
+    code: 'MTH 102',
+    title: 'Linear Algebra',
+    level: 'Part II',
+    programs: ['Computer Science', 'Computer Science with Mathematics'],
+    credits: 3,
+    prerequisites: ['MTH 101'],
+    isElective: false,
+    description: 'Foundational concepts of linear algebra and its applications.',
+    semester: 'Second',
+  },
+  {
+    code: 'ECO 102',
+    title: 'Microeconomics',
+    level: 'Part II',
+    programs: ['Computer Science with Economics', 'Computer Science'],
+    credits: 3,
+    prerequisites: [],
+    isElective: false,
+    description: 'Study of individual economic agents and markets.',
+    semester: 'First',
+  },
+  {
+    code: 'CSC 201',
+    title: 'Data Structures',
+    level: 'Part II',
+    programs: ['Computer Science', 'Computer Science with Mathematics'],
+    credits: 3,
+    prerequisites: ['CSC 102'],
+    isElective: false,
+    description: 'Introduction to data organization, manipulation, and storage.',
+    semester: 'First',
+  },
+  {
+    code: 'MTH 201',
+    title: 'Probability and Statistics',
+    level: 'Part II',
+    programs: ['Computer Science', 'Computer Science with Mathematics'],
+    credits: 3,
+    prerequisites: ['MTH 101'],
+    isElective: false,
+    description: 'Basic concepts of probability and statistical analysis.',
+    semester: 'Second',
+  },
+  {
+    code: 'ECO 201',
+    title: 'Macroeconomics',
+    level: 'Part II',
+    programs: ['Computer Science with Economics'],
+    credits: 3,
+    prerequisites: [],
+    isElective: false,
+    description: 'Study of the economy as a whole, including inflation and unemployment.',
+    semester: 'First',
+  },
+  {
+    code: 'CSC 301',
+    title: 'Software Engineering',
+    level: 'Part III',
+    programs: ['Computer Science', 'Computer Engineering'],
+    credits: 3,
+    prerequisites: ['CSC 201'],
+    isElective: false,
+    description: 'Principles of software development and project management.',
+    semester: 'First',
+  },
+  {
+    code: 'MTH 301',
+    title: 'Discrete Mathematics',
+    level: 'Part III',
+    programs: ['Computer Science', 'Computer Science with Mathematics'],
+    credits: 3,
+    prerequisites: ['MTH 102'],
+    isElective: false,
+    description: 'Mathematical structures important in computer science.',
+    semester: 'First',
+  },
+  {
+    code: 'ECO 301',
+    title: 'International Trade',
+    level: 'Part III',
+    programs: ['Computer Science with Economics'],
+    credits: 3,
+    prerequisites: ['ECO 101'],
+    isElective: true,
+    description: 'Analysis of trade theories and policies.',
+    semester: 'Second',
+  },
+  {
+    code: 'CSC 401',
+    title: 'Database Systems',
+    level: 'Part IV',
+    programs: ['Computer Science', 'Computer Engineering'],
+    credits: 3,
+    prerequisites: ['CSC 301'],
+    isElective: false,
+    description: 'Fundamentals of database design and management.',
+    semester: 'First',
+  },
+  {
+    code: 'MTH 401',
+    title: 'Numerical Analysis',
+    level: 'Part IV',
+    programs: ['Computer Science', 'Computer Science with Mathematics'],
+    credits: 3,
+    prerequisites: ['MTH 102'],
+    isElective: true,
+    description: 'Methods for solving numerical problems using algorithms.',
+    semester: 'Second',
+  },
+  {
+    code: 'ECO 401',
+    title: 'Behavioral Economics',
+    level: 'Part IV',
+    programs: ['Computer Science with Economics'],
+    credits: 3,
+    prerequisites: ['ECO 102'],
+    isElective: true,
+    description: 'Study of psychological influences on economic decision-making.',
+    semester: 'First',
+  },
+  {
+    code: 'CSC 402',
+    title: 'Web Development',
+    level: 'Part III',
+    programs: ['Computer Science', 'Computer Engineering'],
+    credits: 3,
+    prerequisites: ['CSC 301'],
+    isElective: false,
+    description: 'Techniques for building dynamic web applications.',
+    semester: 'Second',
+  },
+  {
+    code: 'ECO 402',
+    title: 'Public Economics',
+    level: 'Part IV',
+    programs: ['Computer Science with Economics'],
+    credits: 3,
+    prerequisites: ['ECO 101'],
+    isElective: true,
+    description: 'Analysis of government policies and their economic impacts.',
+    semester: 'Second',
+  },
+  {
+    code: 'CSC 403',
+    title: 'Machine Learning',
+    level: 'Part V',
+    programs: ['Computer Science', 'Computer Engineering'],
+    credits: 3,
+    prerequisites: ['CSC 301'],
+    isElective: true,
+    description: 'Introduction to machine learning algorithms and techniques.',
+    semester: 'First',
+  },
+  {
+    code: 'MTH 402',
+    title: 'Graph Theory',
+    level: 'Part V',
+    programs: ['Computer Science', 'Computer Science with Mathematics'],
+    credits: 3,
+    prerequisites: ['MTH 301'],
+    isElective: true,
+    description: 'Study of graphs and their applications in computer science.',
+    semester: 'Second',
+  },
+  
+];
+
+async function seedCourses() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    await Course.deleteMany(); // Clear existing courses
+    await Course.insertMany(courses); // Insert new courses
+
+    console.log('Courses seeded successfully!');
+    mongoose.connection.close();
+  } catch (error) {
+    console.error('Error seeding courses:', error);
+    mongoose.connection.close();
+  }
+}
+
+seedCourses();

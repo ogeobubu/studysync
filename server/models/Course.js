@@ -4,8 +4,8 @@ const courseSchema = new mongoose.Schema({
   code: { type: String, required: true, unique: true, uppercase: true },
   title: { type: String, required: true },
   level: { type: String, enum: ['Part I', 'Part II', 'Part III', 'Part IV', 'Part V'], required: true },
-  program: { 
-    type: String, 
+  programs: { 
+    type: [String], 
     enum: ['Computer Science', 'Computer Science with Mathematics', 'Computer Science with Economics', 'Computer Engineering'],
     required: true 
   },
