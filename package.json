@@ -9,10 +9,8 @@
 
     "start": "node server/app.js",
 
-    "dev": "concurrently \"nodemon server/app.js\" \"npm run dev --prefix client\""
-  },
-  "devDependencies": {
-    "concurrently": "^9.1.2",
-    "nodemon": "^3.1.10"
+    "dev": "npm run dev-server & npm run dev-client",
+    "dev-server": "node server/app.js",
+    "dev-client": "npm run dev --prefix client"
   }
 }
