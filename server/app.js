@@ -35,14 +35,14 @@ const createApp = () => {
   app.use("/api/appointments", appointmentsRoutes);
   app.use("/api/users", userRoutes);
   app.use("/api/registrations", registrationRoute);
-  app.use('/api/recommendations', recommendationRoute);
+  app.use("/api/recommendations", recommendationRoute);
 
   if (process.env.NODE_ENV === "production") {
-    const clientBuildPath = path.join(__dirname, "..", "client", "dist");
-    app.use(express.static(clientBuildPath));
+    const path = require("path");
+    app.use(express.static(path.join(__dirname, "..", "client", "dist")));
 
     app.get("*", (req, res) => {
-      res.sendFile(path.join(clientBuildPath, "index.html"));
+      res.sendFile(path.join(__dirname, "..", "client", "dist", "index.html"));
     });
   }
 

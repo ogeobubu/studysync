@@ -22,6 +22,6 @@ router.delete('/:id', protect, authorize('admin'), deleteCourse);
 
 // Route to fetch courses by part and semester
 router.get('/filter', getCoursesByPartAndSemester);
-router.get('/programs/:program', getCoursesByProgram);
+router.get('/programs/:id', getCoursesByProgram);
 
 module.exports = router;
