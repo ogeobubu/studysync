@@ -11,7 +11,7 @@ const { protect, authorize } = require("../middlewares/authMiddleware");
 // Base URL: /api/v1/registrations
 
 // Student routes
-router.get("/student/:studentId", protect, getStudentRegistrations);
+router.get("/student/:id", protect, getStudentRegistrations);
 router.post("/", protect, registerCourse);
 
 // Admin routes
