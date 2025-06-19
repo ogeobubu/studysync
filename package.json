@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "build": "cd client && npm install && npm run build",
+    "start": "cd server && node app.js",
+    "dev": "concurrently \"cd server && nodemon app.js\" \"cd client && npm run dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0",
+    "nodemon": "^2.0.0"
+  }
+}

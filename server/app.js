@@ -37,6 +37,15 @@ const createApp = () => {
   app.use("/api/registrations", registrationRoute);
   app.use('/api/recommendations', recommendationRoute);
 
+  if (process.env.NODE_ENV === "production") {
+    const clientBuildPath = path.join(__dirname, "..", "client", "dist");
+    app.use(express.static(clientBuildPath));
+
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(clientBuildPath, "index.html"));
+    });
+  }
+
   // Error handling middleware (functional)
   app.use(errorHandler);
 
