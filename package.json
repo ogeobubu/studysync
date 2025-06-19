@@ -8,10 +8,11 @@
     "build": "npm run install-all && npm run build-client",
 
     "start": "node server/app.js",
-    "dev": "\"cd server/app.js\" \"npm run dev --prefix client\""
+
+    "dev": "concurrently \"nodemon server/app.js\" \"npm run dev --prefix client\""
   },
   "devDependencies": {
-    "concurrently": "^8.0.0",
-    "nodemon": "^2.0.0"
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.10"
   }
 }
