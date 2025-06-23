@@ -29,7 +29,7 @@ export default function RegisterPage() {
     options: {
       onSuccess: () => {
         toast.success('Account created successfully!');
-        navigate('/login');
+        navigate('/verify');
       },
       onError: (error) => {
         toast.error(error.response.data.message);
@@ -119,6 +119,7 @@ export default function RegisterPage() {
             <SelectContent>
               <SelectItem value="student">Student</SelectItem>
               <SelectItem value="advisor">Academic Advisor</SelectItem>
+              <SelectItem value="admin">System Admin</SelectItem>
             </SelectContent>
           </Select>
         </div>

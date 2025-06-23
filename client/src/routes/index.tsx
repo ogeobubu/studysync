@@ -9,9 +9,13 @@ import LoginPage from '../pages/auth/LoginPage';
 
 import ProtectedRoute from '../components/ProtectedRoute';
 import MainLayout from '../layouts/MainLayout';
+import ChatLayout from '../layouts/ChatLayout';
 
 import AdminRoutes from './AdminRoutes';
 import StudentRoutes from './StudentRoutes';
+
+import ChatListPage from '../pages/chat/ChatListPage';
+import ChatWindowPage from '../pages/chat/ChatWindowPage';
 
 export default function AppRoutes() {
   return (
@@ -28,6 +32,15 @@ export default function AppRoutes() {
 
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/student/*" element={<StudentRoutes />} />
+      </Route>
+
+      <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+        <Route path="/admin/*" element={<AdminRoutes />} />
+      </Route>
+
+      <Route element={<ProtectedRoute><ChatLayout /></ProtectedRoute>}>
+        <Route path="/chats" element={<ChatListPage />} />
+        <Route path="/chats/:chatId" element={<ChatWindowPage />} />
       </Route>
     </Routes>
   );

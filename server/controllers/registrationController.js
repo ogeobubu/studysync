@@ -69,8 +69,9 @@ exports.updateGrade = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/registrations/student/:studentId
 // @access  Private
 exports.getStudentRegistrations = asyncHandler(async (req, res, next) => {
+  const { id: studentId } = req.params
   const registrations = await Registration.find({
-    studentId: req.params.studentId,
+    studentId,
   })
     .populate("courseId")
     .sort({ session: -1, semester: -1 });

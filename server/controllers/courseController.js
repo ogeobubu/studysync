@@ -109,7 +109,7 @@ exports.getCoursesByPartAndSemester = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/courses/programs/:program
 // @access  Public
 exports.getCoursesByProgram = asyncHandler(async (req, res, next) => {
-  const { program } = req.params;
+  const { id: program } = req.params;
 
   const courses = await Course.find({ programs: program });
 

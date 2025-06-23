@@ -13,7 +13,7 @@ export default function QuickLinks() {
           Request Advising
         </QuickLink>
         <QuickLink 
-          to="/student/academic-records" 
+          to="/student/academics" 
           icon={<FileText className="h-5 w-5" />}
         >
           View Academic Records

@@ -12,6 +12,7 @@ const appointmentsRoutes = require("./routes/appointments");
 const userRoutes = require("./routes/user");
 const registrationRoute = require("./routes/registration");
 const recommendationRoute = require("./routes/recommendations");
+const chatRoutes = require("./routes/chatRoutes");
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -36,6 +37,8 @@ const createApp = () => {
   app.use("/api/users", userRoutes);
   app.use("/api/registrations", registrationRoute);
   app.use("/api/recommendations", recommendationRoute);
+  app.use("/api/chats", chatRoutes);
+  app.use("/public", express.static(path.join(__dirname, "public")));
 
   if (process.env.NODE_ENV === "production") {
     const path = require("path");
@@ -45,8 +48,6 @@ const createApp = () => {
       res.sendFile(path.join(__dirname, "..", "client", "dist", "index.html"));
     });
   }
-
-  // Error handling middleware (functional)
   app.use(errorHandler);
 
   return app;
@@ -55,7 +56,6 @@ const createApp = () => {
 const app = createApp();
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
-

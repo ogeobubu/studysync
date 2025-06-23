@@ -1,7 +1,7 @@
 import { createContext, useContext, type ReactNode, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useHttp } from '../api/useHttp';
-import { setAuthData } from "../api/http";
+import { http, setAuthData } from "../api/http";
+import { useHttp } from "../api/useHttp"
 import { jwtDecode } from 'jwt-decode';
 import { Role } from "../types";
 import type { User, AuthContextType, JwtPayload } from "../types";
@@ -21,12 +21,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (storedToken) {
         try {
           const decoded = jwtDecode<JwtPayload>(storedToken);
-          const { id, role, name, email } = decoded;
-
-          const userData = { id, name, email, role };
-          setUser(userData);
           setToken(storedToken);
           setAuthData({ token: storedToken });
+
+          if (!user) {
+            const response = await http.get('/users/me');
+            setUser(response.data.data);
+          }
         } catch (err) {
           console.error('Invalid token:', err);
           localStorage.removeItem('authToken');
@@ -36,7 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     initializeAuth();
-  }, []);
+  }, [user]);
 
   const { mutate: loginUser } = useHttp<{ token: string; user: User }, { email: string; password: string }>({
     url: '/auth/login',
@@ -47,11 +48,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(user);
         setToken(token);
         localStorage.setItem('authToken', JSON.stringify(token));
-        setAuthData({ token }); // Set auth data after login
+        setAuthData({ token });
 
         // Redirect based on role
         const redirectMap = {
-          [Role.ADMIN]: '/admin/system',
+          [Role.ADMIN]: '/admin/dashboard',
           [Role.ADVISOR]: '/advisor/requests',
           [Role.STUDENT]: '/student/dashboard',
         };
@@ -80,13 +81,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
     localStorage.removeItem('authToken');
     localStorage.removeItem('authData');
-    setAuthData(null); // Clear auth data
+    setAuthData(null);
     navigate('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
-      {loading ? <div>Loading...</div> : children}
+    <AuthContext.Provider value={{ user, token, login, logout, loading, setUser }}>
+      {loading ? <div></div> : children}
     </AuthContext.Provider>
   );
 };

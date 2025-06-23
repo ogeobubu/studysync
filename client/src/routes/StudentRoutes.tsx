@@ -5,6 +5,7 @@ import AdvisingRequest from '../pages/student/AdvisingRequest';
 import AcademicsPage from '../pages/student/AcademicsPage';
 import Recommendations from '../pages/student/Recommendations';
 import Profile from '../pages/student/Profile';
+import SettingsPage from '../pages/student/SettingsPage';
 import RoleProtectedRoute from '../components/ProtectedRoute/RoleProtectedRoute';
 import { Role } from '../types/user';
 
@@ -18,6 +19,7 @@ export default function StudentRoutes() {
         <Route path="academics" element={<AcademicsPage />} />
         <Route path="recommendations" element={<Recommendations />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>
   );
