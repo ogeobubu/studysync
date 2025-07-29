@@ -1,4 +1,5 @@
 const Advising = require('../models/Advising');
+const Appointment = require('../models/Appointment');
 const User = require('../models/User');
 const asyncHandler = require('../middlewares/async');
 const ErrorResponse = require('../utils/errorResponse');
@@ -213,46 +214,6 @@ exports.assignAdvisor = asyncHandler(async (req, res, next) => {
   });
 });
 
-// @desc    Update advising request status
-// @route   PATCH /api/advising/:id/status
-// @access  Private (Admin/Advisor)
-exports.updateRequestStatus = asyncHandler(async (req, res, next) => {
-  const { status, notes } = req.body;
-  const validStatuses = ['Pending', 'Assigned', 'In Progress', 'Completed', 'Cancelled'];
-
-  if (!validStatuses.includes(status)) {
-    return next(new ErrorResponse('Invalid status value', 400));
-  }
-
-  const advisingRequest = await Advising.findById(req.params.id);
-  if (!advisingRequest) {
-    return next(new ErrorResponse(`Advising request not found with id of ${req.params.id}`, 404));
-  }
-
-  // Authorization check - only assigned advisor or admin can update
-  if (req.user.role === 'advisor' && 
-      (!advisingRequest.advisor || !advisingRequest.advisor.equals(req.user._id))) {
-    return next(new ErrorResponse('Not authorized to update this request', 403));
-  }
-
-  // Update request
-  advisingRequest.status = status;
-  advisingRequest.notes = notes || advisingRequest.notes;
-  advisingRequest.updatedAt = Date.now();
-
-  await advisingRequest.save();
-
-  // Send notification to student if status changed to completed or cancelled
-  if (['Completed', 'Cancelled'].includes(status)) {
-    await sendAdvisingStatusUpdateEmail(advisingRequest, status.toLowerCase());
-  }
-
-  res.status(200).json({
-    success: true,
-    data: await advisingRequest.populate('advisor', 'name email')
-  });
-});
-
 // @desc    Delete an advising request
 // @route   DELETE /api/advising/:id
 // @access  Private (Admin/Student)
@@ -279,5 +240,74 @@ exports.deleteAdvisingRequest = asyncHandler(async (req, res, next) => {
     success: true,
     data: {},
     message: 'Advising request deleted successfully'
+  });
+});
+
+// @desc    Update advising request status
+// @route   PATCH /api/advising/:id/status
+// @access  Private (Admin/Advisor)
+exports.updateRequestStatus = asyncHandler(async (req, res, next) => {
+  const { status, notes, appointmentDetails } = req.body;
+  const validStatuses = ['Pending', 'Assigned', 'In Progress', 'Completed', 'Cancelled', 'Scheduled'];
+
+  if (!validStatuses.includes(status)) {
+    return next(new ErrorResponse('Invalid status value', 400));
+  }
+
+  const advisingRequest = await Advising.findById(req.params.id);
+  if (!advisingRequest) {
+    return next(new ErrorResponse(`Advising request not found with id of ${req.params.id}`, 404));
+  }
+
+  // Authorization check - only assigned advisor or admin can update
+  if (req.user.role === 'advisor' && 
+      (!advisingRequest.advisor || !advisingRequest.advisor.equals(req.user._id))) {
+    return next(new ErrorResponse('Not authorized to update this request', 403));
+  }
+
+  // If changing to Scheduled status, validate and create appointment
+  if (status === 'Scheduled') {
+    if (!appointmentDetails || !appointmentDetails.date || !appointmentDetails.time) {
+      return next(new ErrorResponse('Appointment date and time are required when scheduling', 400));
+    }
+
+    // Create the appointment
+    const appointment = await Appointment.create({
+      user: advisingRequest.user,
+      advisor: advisingRequest.advisor,
+      title: appointmentDetails.title || `Advising Session - ${advisingRequest.reason}`,
+      date: appointmentDetails.date,
+      time: appointmentDetails.time,
+      location: appointmentDetails.location,
+      meetingLink: appointmentDetails.meetingLink
+    });
+
+    // Update advising request with appointment details
+    advisingRequest.appointment = {
+      title: appointment.title,
+      date: appointment.date,
+      time: appointment.time,
+      location: appointment.location,
+      meetingLink: appointment.meetingLink
+    };
+  }
+
+  // Update request status and notes
+  advisingRequest.status = status;
+  advisingRequest.notes = notes || advisingRequest.notes;
+  advisingRequest.updatedAt = Date.now();
+
+  await advisingRequest.save();
+
+  // Send appropriate notifications
+  if (status === 'Scheduled') {
+    await sendAdvisingStatusUpdateEmail(advisingRequest, 'scheduled');
+  } else if (['Completed', 'Cancelled'].includes(status)) {
+    await sendAdvisingStatusUpdateEmail(advisingRequest, status.toLowerCase());
+  }
+
+  res.status(200).json({
+    success: true,
+    data: await advisingRequest.populate('advisor', 'name email')
   });
 });

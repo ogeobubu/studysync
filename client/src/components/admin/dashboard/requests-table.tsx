@@ -12,7 +12,7 @@ import { Button } from "../../ui/button";
 import { format } from "date-fns";
 import { useHttp } from '../../../api/useHttp';
 import { Modal } from '../../ui/modal';
-import { Eye, Edit, Trash, UserPlus } from 'lucide-react';
+import { Eye, Edit, Trash, UserPlus, Calendar } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
 import { Textarea } from '../../ui/textarea';
@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { Skeleton } from '../../ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from "../../ui/alert";
 import { AlertCircle, Frown } from "lucide-react";
+import { Input } from '../../ui/input';
 
 interface User {
   _id: string;
@@ -39,12 +40,19 @@ interface Request {
     start: string;
     end: string;
   };
-  status: string;
+  status: 'Pending' | 'Assigned' | 'In Progress' | 'Completed' | 'Cancelled' | 'Scheduled';
   createdAt: string;
   updatedAt: string;
   advisor?: User;
   notes?: {
     advisorNotes?: string;
+  };
+  appointment?: {
+    title: string;
+    date: string;
+    time: string;
+    location?: string;
+    meetingLink?: string;
   };
 }
 
@@ -77,9 +85,18 @@ export function RequestsTable({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [selectedAdvisor, setSelectedAdvisor] = useState<string>('');
   const [assignmentNotes, setAssignmentNotes] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [appointmentDetails, setAppointmentDetails] = useState({
+    title: '',
+    date: '',
+    time: '',
+    location: '',
+    meetingLink: ''
+  });
 
   // API calls
   const { mutate: deleteRequest, isPending: isDeleting } = useHttp<void, { id: string }>({
@@ -92,6 +109,14 @@ export function RequestsTable({
     { advisorId: string; notes?: string }
   >({
     url: `/advising/${selectedRequest?._id}/assign`,
+    method: 'PATCH',
+  });
+
+  const { mutate: updateStatus, isPending: isUpdatingStatus } = useHttp<
+    void,
+    { status: string; notes?: string; appointmentDetails?: any }
+  >({
+    url: `/advising/${selectedRequest?._id}/status`,
     method: 'PATCH',
   });
 
@@ -144,12 +169,49 @@ export function RequestsTable({
     }
   };
 
+  const handleStatusChange = async () => {
+    if (!selectedRequest || !selectedStatus) return;
+    
+    try {
+      const payload = {
+        status: selectedStatus,
+        ...(selectedStatus === 'Scheduled' ? { appointmentDetails } : {})
+      };
+
+      await updateStatus(
+        payload,
+        {
+          onSuccess: () => {
+            toast.success(`Request status updated to ${selectedStatus}`);
+            refetchRequests();
+            setStatusModalOpen(false);
+            setSelectedStatus('');
+            setAppointmentDetails({
+              title: '',
+              date: '',
+              time: '',
+              location: '',
+              meetingLink: ''
+            });
+          },
+          onError: (error) => {
+            toast.error(error.message || 'Failed to update request status');
+          }
+        }
+      );
+    } catch (error) {
+      toast.error('Failed to update request status');
+    }
+  };
+
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'pending': return 'warning';
       case 'assigned': return 'info';
+      case 'in progress': return 'default';
       case 'completed': return 'success';
       case 'cancelled': return 'destructive';
+      case 'scheduled': return 'default';
       default: return 'default';
     }
   };
@@ -234,6 +296,14 @@ export function RequestsTable({
                     </span>
                   </div>
                 )}
+                {request.appointment && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span className="text-sm">
+                      {format(new Date(request.appointment.date), 'PP')} at {request.appointment.time}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="mt-4 flex justify-end gap-2">
@@ -263,6 +333,17 @@ export function RequestsTable({
                 size="sm"
                 onClick={() => {
                   setSelectedRequest(request);
+                  setSelectedStatus(request.status);
+                  setStatusModalOpen(true);
+                }}
+              >
+                <Calendar className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setSelectedRequest(request);
                   setDeleteModalOpen(true);
                 }}
               >
@@ -284,6 +365,7 @@ export function RequestsTable({
               <TableHead>Preferred Time</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Advisor</TableHead>
+              <TableHead>Appointment</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -337,6 +419,18 @@ export function RequestsTable({
                     <span className="text-muted-foreground">Not assigned</span>
                   )}
                 </TableCell>
+                <TableCell>
+                  {request.appointment ? (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        {format(new Date(request.appointment.date), 'PP')} at {request.appointment.time}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">Not scheduled</span>
+                  )}
+                </TableCell>
                 <TableCell className="text-right flex items-center justify-center gap-2">
                   <Button 
                     variant="ghost" 
@@ -358,6 +452,17 @@ export function RequestsTable({
                     }}
                   >
                     <Edit className="w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => {
+                      setSelectedRequest(request);
+                      setSelectedStatus(request.status);
+                      setStatusModalOpen(true);
+                    }}
+                  >
+                    <Calendar className="w-4" />
                   </Button>
                   <Button 
                     variant="ghost" 
@@ -398,6 +503,29 @@ export function RequestsTable({
         onNotesChange={setAssignmentNotes}
         onSubmit={handleAssignAdvisor}
         isSubmitting={isAssigning}
+      />
+
+      {/* Status Change Modal */}
+      <StatusChangeModal
+        isOpen={statusModalOpen}
+        onClose={() => {
+          setStatusModalOpen(false);
+          setSelectedStatus('');
+          setAppointmentDetails({
+            title: '',
+            date: '',
+            time: '',
+            location: '',
+            meetingLink: ''
+          });
+        }}
+        request={selectedRequest}
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        appointmentDetails={appointmentDetails}
+        onAppointmentDetailsChange={setAppointmentDetails}
+        onConfirm={handleStatusChange}
+        isUpdating={isUpdatingStatus}
       />
 
       {/* Delete Confirmation Modal */}
@@ -530,6 +658,33 @@ function RequestDetailsModal({ isOpen, onClose, request }: {
               </div>
             </div>
           )}
+
+          {request.appointment && (
+            <div className="space-y-2">
+              <h3 className="font-medium">Appointment Details</h3>
+              <div className="p-3 bg-muted rounded-md">
+                <p className="font-medium">{request.appointment.title}</p>
+                <p className="mt-2">
+                  <Calendar className="inline mr-2 h-4 w-4" />
+                  {format(new Date(request.appointment.date), 'PP')} at {request.appointment.time}
+                </p>
+                {request.appointment.location && (
+                  <p>
+                    <span className="font-medium">Location: </span>
+                    {request.appointment.location}
+                  </p>
+                )}
+                {request.appointment.meetingLink && (
+                  <p>
+                    <span className="font-medium">Meeting Link: </span>
+                    <a href={request.appointment.meetingLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                      Join Meeting
+                    </a>
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end">
@@ -634,6 +789,161 @@ function AssignAdvisorModal({
             disabled={!selectedAdvisor || isSubmitting}
           >
             {isSubmitting ? 'Assigning...' : 'Assign Advisor'}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function StatusChangeModal({
+  isOpen,
+  onClose,
+  request,
+  selectedStatus,
+  onStatusChange,
+  appointmentDetails,
+  onAppointmentDetailsChange,
+  onConfirm,
+  isUpdating
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  request: Request | null;
+  selectedStatus: string;
+  onStatusChange: (status: string) => void;
+  appointmentDetails: any;
+  onAppointmentDetailsChange: (details: any) => void;
+  onConfirm: () => void;
+  isUpdating: boolean;
+}) {
+  if (!request) return null;
+
+  const statusOptions = [
+    { value: 'Pending', label: 'Pending' },
+    { value: 'Assigned', label: 'Assigned' },
+    { value: 'In Progress', label: 'In Progress' },
+    { value: 'Scheduled', label: 'Scheduled' },
+    { value: 'Completed', label: 'Completed' },
+    { value: 'Cancelled', label: 'Cancelled' }
+  ];
+
+  const handleAppointmentDetailChange = (field: string, value: string) => {
+    onAppointmentDetailsChange({
+      ...appointmentDetails,
+      [field]: value
+    });
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold">Update Request Status</h2>
+        
+        <div className="space-y-4">
+          <div>
+            <label>Current Status</label>
+            <div className="mt-1 p-2 border rounded-md bg-muted/50">
+              {request.status}
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="status">New Status</label>
+            <Select
+              value={selectedStatus}
+              onValueChange={onStatusChange}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {selectedStatus === 'Scheduled' && (
+            <div className="space-y-4 pt-2">
+              <h3 className="font-medium">Appointment Details</h3>
+              
+              <div>
+                <label htmlFor="title">Title</label>
+                <Input
+                  id="title"
+                  value={appointmentDetails.title}
+                  onChange={(e) => handleAppointmentDetailChange('title', e.target.value)}
+                  placeholder="e.g., Course Selection Advising"
+                  className="mt-1"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="date">Date</label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={appointmentDetails.date}
+                    onChange={(e) => handleAppointmentDetailChange('date', e.target.value)}
+                    className="mt-1"
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="time">Time</label>
+                  <Input
+                    id="time"
+                    type="time"
+                    value={appointmentDetails.time}
+                    onChange={(e) => handleAppointmentDetailChange('time', e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="location">Location (Optional)</label>
+                <Input
+                  id="location"
+                  value={appointmentDetails.location}
+                  onChange={(e) => handleAppointmentDetailChange('location', e.target.value)}
+                  placeholder="e.g., Building A, Room 101"
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="meetingLink">Meeting Link (Optional)</label>
+                <Input
+                  id="meetingLink"
+                  value={appointmentDetails.meetingLink}
+                  onChange={(e) => handleAppointmentDetailChange('meetingLink', e.target.value)}
+                  placeholder="e.g., https://zoom.us/j/123456789"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <Button 
+            variant="outline" 
+            onClick={onClose}
+            disabled={isUpdating}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={onConfirm}
+            disabled={isUpdating || !selectedStatus || (selectedStatus === 'Scheduled' && (!appointmentDetails.date || !appointmentDetails.time))}
+          >
+            {isUpdating ? 'Updating...' : 'Update Status'}
           </Button>
         </div>
       </div>

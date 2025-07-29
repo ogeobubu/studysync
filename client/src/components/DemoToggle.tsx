@@ -1,4 +1,3 @@
-// client/src/components/DemoToggle.tsx
 import { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -15,6 +14,17 @@ export default function DemoToggle() {
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<HTMLDivElement>(null);
   const dragOffset = useRef({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if mobile on mount
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
 
   // Load saved position and demo mode state
   useEffect(() => {
@@ -22,58 +32,83 @@ export default function DemoToggle() {
     const savedPos = localStorage.getItem('demoTogglePosition');
     if (savedPos) {
       try {
-        setPosition(JSON.parse(savedPos));
+        const pos = JSON.parse(savedPos);
+        // Ensure position stays within viewport bounds
+        setPosition({
+          x: Math.min(pos.x, window.innerWidth - 250),
+          y: Math.min(pos.y, window.innerHeight - 100)
+        });
       } catch (e) {
         console.error('Failed to parse position', e);
       }
     }
   }, []);
 
-  // Handle mouse down for dragging
-  const handleMouseDown = (e: React.MouseEvent) => {
+  // Handle touch/mouse down for dragging
+  const handleStartDrag = (e: React.MouseEvent | React.TouchEvent) => {
     // Ignore if clicking on interactive elements
     if ((e.target as HTMLElement).closest('.no-drag')) return;
     
     setIsDragging(true);
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const rect = dragRef.current?.getBoundingClientRect();
+    
     if (rect) {
       dragOffset.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+        x: clientX - rect.left,
+        y: clientY - rect.top
       };
     }
     e.preventDefault();
   };
 
-  // Handle mouse move and up events
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
-      setPosition({
-        x: e.clientX - dragOffset.current.x,
-        y: e.clientY - dragOffset.current.y
-      });
-    };
+  // Handle move events
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handleMove = (e: MouseEvent | TouchEvent) => {
+    if (!isDragging) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    const newX = clientX - dragOffset.current.x;
+    const newY = clientY - dragOffset.current.y;
+    
+    // Keep within viewport bounds
+    const boundedX = Math.max(0, Math.min(newX, window.innerWidth - (dragRef.current?.offsetWidth || 250)));
+    const boundedY = Math.max(0, Math.min(newY, window.innerHeight - (dragRef.current?.offsetHeight || 100)));
+    
+    setPosition({ x: boundedX, y: boundedY });
+  };
 
-    const handleMouseUp = () => {
-      if (isDragging) {
-        setIsDragging(false);
-        localStorage.setItem('demoTogglePosition', JSON.stringify(position));
-      }
-    };
-
+  // Handle end of drag
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handleEndDrag = () => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      setIsDragging(false);
+      localStorage.setItem('demoTogglePosition', JSON.stringify(position));
+    }
+  };
+
+  // Set up event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('mouseup', handleEndDrag);
+      document.addEventListener('touchmove', handleMove, { passive: false });
+      document.addEventListener('touchend', handleEndDrag);
       document.body.style.userSelect = 'none';
+      document.body.style.touchAction = 'none';
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleEndDrag);
+      document.removeEventListener('touchmove', handleMove);
+      document.removeEventListener('touchend', handleEndDrag);
       document.body.style.userSelect = '';
+      document.body.style.touchAction = '';
     };
-  }, [isDragging, position]);
+  }, [handleEndDrag, handleMove, isDragging, position]);
 
   const handleToggleDemo = (enabled: boolean) => {
     if (enabled) {
@@ -90,9 +125,10 @@ export default function DemoToggle() {
     position: 'fixed',
     left: `${position.x}px`,
     top: `${position.y}px`,
-    zIndex: 50,
+    zIndex: 9999,
     cursor: isDragging ? 'grabbing' : 'grab',
-    touchAction: 'none'
+    touchAction: 'none',
+    maxWidth: 'calc(100vw - 20px)'
   };
 
   if (!isDemoMode) {
@@ -100,10 +136,11 @@ export default function DemoToggle() {
       <div
         ref={dragRef}
         style={containerStyle}
-        onMouseDown={handleMouseDown}
+        onMouseDown={handleStartDrag}
+        onTouchStart={handleStartDrag}
         className="select-none"
       >
-        <div className="bg-white rounded-lg shadow-lg border-2 border-blue-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-lg border-2 border-blue-200 overflow-hidden w-[250px]">
           <div className="px-3 py-2 flex items-center cursor-move bg-blue-50">
             <Move className="h-4 w-4 mr-2 opacity-70" />
             <span className="text-sm font-medium">Demo Controls</span>
@@ -122,7 +159,7 @@ export default function DemoToggle() {
         </div>
 
         <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-          <div className="space-y-4">
+          <div className="space-y-4 p-4">
             <h3 className="text-lg font-semibold">Enable Demo Mode</h3>
             <p className="text-sm text-gray-600">
               Demo mode populates the application with sample data for testing and demonstration purposes.
@@ -137,7 +174,7 @@ export default function DemoToggle() {
               </ul>
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col sm:flex-row justify-end gap-2">
               <Button variant="outline" onClick={() => setShowModal(false)} className="no-drag">
                 Cancel
               </Button>
@@ -155,16 +192,17 @@ export default function DemoToggle() {
     <div
       ref={dragRef}
       style={containerStyle}
-      onMouseDown={handleMouseDown}
+      onMouseDown={handleStartDrag}
+      onTouchStart={handleStartDrag}
       className="select-none"
     >
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg shadow-lg min-w-[250px]">
+      <div className={`bg-purple-600 text-white rounded-lg shadow-lg ${isMobile ? 'w-full' : 'min-w-[250px]'}`}>
         <div className="px-4 py-2 flex items-center justify-between cursor-move">
           <div className="flex items-center">
             <Badge variant="secondary" className="bg-white text-blue-600 mr-2 no-drag">
               DEMO MODE
             </Badge>
-            <Move className="h-4 w-4 opacity-70" />
+            {!isMobile && <Move className="h-4 w-4 opacity-70" />}
           </div>
           <button 
             onClick={() => setShowDetails(!showDetails)}
@@ -186,15 +224,15 @@ export default function DemoToggle() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <User className="h-3 w-3" />
-                  <span>Student: student@demo.com</span>
+                  <span className="truncate">Student: student@demo.com</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="h-3 w-3" />
-                  <span>Advisor: advisor@demo.com</span>
+                  <span className="truncate">Advisor: advisor@demo.com</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="h-3 w-3" />
-                  <span>Admin: admin@demo.com</span>
+                  <span className="truncate">Admin: admin@demo.com</span>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <Lock className="h-3 w-3" />
