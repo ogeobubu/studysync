@@ -30,6 +30,6 @@ router.get("/:id", protect, getRequestById);
 router.patch("/:id/assign", protect, authorize("admin", "advisor"), assignAdvisor);
 
 // Delete an advising request
-router.delete('/:id', protect, authorize('admin'), deleteAdvisingRequest);
+router.delete("/:id", protect, authorize('admin'), deleteAdvisingRequest);
 
 module.exports = router;

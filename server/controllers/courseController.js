@@ -3,7 +3,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middlewares/async');
 
 // @desc    Get all courses
-// @route   GET /api/v1/courses
+// @route   GET /api/courses
 // @access  Public
 exports.getAllCourses = asyncHandler(async (req, res, next) => {
   const courses = await Course.find();
@@ -15,7 +15,7 @@ exports.getAllCourses = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Get a single course
-// @route   GET /api/v1/courses/:id
+// @route   GET /api/courses/:id
 // @access  Public
 exports.getCourse = asyncHandler(async (req, res, next) => {
   const course = await Course.findById(req.params.id);
@@ -31,7 +31,7 @@ exports.getCourse = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Create a new course
-// @route   POST /api/v1/courses
+// @route   POST /api/courses
 // @access  Private/Admin
 exports.createCourse = asyncHandler(async (req, res, next) => {
   // Validate programs array
@@ -47,7 +47,7 @@ exports.createCourse = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Update a course
-// @route   PUT /api/v1/courses/:id
+// @route   PUT /api/courses/:id
 // @access  Private/Admin
 exports.updateCourse = asyncHandler(async (req, res, next) => {
   // Validate programs array
@@ -71,7 +71,7 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Delete a course
-// @route   DELETE /api/v1/courses/:id
+// @route   DELETE /api/courses/:id
 // @access  Private/Admin
 exports.deleteCourse = asyncHandler(async (req, res, next) => {
   const course = await Course.findByIdAndDelete(req.params.id);
@@ -87,14 +87,15 @@ exports.deleteCourse = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Get courses by part and semester
-// @route   GET /api/v1/courses/filter
+// @route   GET /api/courses/filter?part=PartI&semester=First
 // @access  Public
 exports.getCoursesByPartAndSemester = asyncHandler(async (req, res, next) => {
-  const { part, semester } = req.query;
+  const { part, semester, program } = req.query;
 
   const query = {};
   if (part) query.level = part;
   if (semester) query.semester = semester;
+  if (program) query.programs = { $in: [program] };
 
   const courses = await Course.find(query);
   
@@ -106,12 +107,14 @@ exports.getCoursesByPartAndSemester = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Get courses by program
-// @route   GET /api/v1/courses/programs/:program
+// @route   GET /api/courses/programs/:program
 // @access  Public
 exports.getCoursesByProgram = asyncHandler(async (req, res, next) => {
-  const { id: program } = req.params;
+  const { program } = req.params;
 
-  const courses = await Course.find({ programs: program });
+  const courses = await Course.find({ 
+    programs: { $in: [program] } 
+  });
 
   if (!courses.length) {
     return next(new ErrorResponse(`No courses found for program: ${program}`, 404));

@@ -11,7 +11,7 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import MainLayout from '../layouts/MainLayout';
 import ChatLayout from '../layouts/ChatLayout';
 
-import AdminRoutes from './AdminRoutes';
+import AdminRoutes from './AdminRoutes';  
 import StudentRoutes from './StudentRoutes';
 
 import ChatListPage from '../pages/chat/ChatListPage';

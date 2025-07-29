@@ -14,7 +14,6 @@ const UserSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Please provide email"],
-      unique: true,
       lowercase: true,
       validate: [validator.isEmail, "Please provide a valid email"],
       maxlength: [100, "Email cannot be more than 100 characters"],
@@ -31,7 +30,6 @@ const UserSchema = new mongoose.Schema(
     },
     matricNumber: {
       type: String,
-      unique: true,
       uppercase: true,
       sparse: true,
       validate: {
@@ -205,7 +203,7 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-// Indexes
+// Indexes (keep only these explicit indexes, remove 'unique: true' from field definitions above)
 UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ matricNumber: 1 }, { unique: true, sparse: true });
 
