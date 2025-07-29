@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 const {
   getChats,
@@ -6,21 +6,22 @@ const {
   sendMessage,
   startChat,
   closeChat
-} = require("../controllers/chatController");
+} = require('../controllers/chatController');
+const { protect, authorize } = require('../middlewares/authMiddleware');
 
 // Get all chats for current user
-router.get("/", getChats);
+router.get('/', protect, getChats);
 
 // Get messages for specific chat
-router.get("/:id", getChatMessages);
+router.get('/:chatId', protect, getChatMessages);
 
 // Send message in chat
-router.post("/messages/:id", sendMessage);
+router.post('/:chatId/messages', protect, sendMessage);
 
 // Start new chat (student initiates with advisor)
-router.post("/start", startChat);
+router.post('/start', protect, authorize('student', "admin"), startChat);
 
 // Close chat
-router.patch("/close", closeChat);
+router.patch('/:chatId/close', protect, closeChat);
 
 module.exports = router;

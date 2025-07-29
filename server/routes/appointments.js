@@ -4,8 +4,12 @@ const {
   createAppointment,
   scheduleAppointment,
 } = require("../controllers/appointmentController");
+const { protect, authorize } = require("../middlewares/authMiddleware");
 
-router.post("/", createAppointment);
-router.post("/schedule", scheduleAppointment);
+// Route for students to create an appointment
+router.post("/", protect, authorize("student"), createAppointment);
+
+// Route for advisors to schedule an appointment based on an advising request
+router.post("/schedule", protect, authorize("advisor"), scheduleAppointment);
 
 module.exports = router;

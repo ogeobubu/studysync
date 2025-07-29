@@ -15,38 +15,61 @@ const {
   getSystemOverview,
   getAdvisorOverview
 } = require("../controllers/userController");
+const { protect, authorize } = require("../middlewares/authMiddleware");
 const { profileUpload } = require("../utils/multer");
 
+// ======================
+//  PROTECT ALL ROUTES
+// ======================
+router.use(protect);
 
-router.get("/me", getMe)
-  router.put("/me", profileUpload, updateMe);
+// ======================
+//  CURRENT USER ROUTES
+// ======================
+router.route("/me")
+  .get(authorize("student", "advisor", "admin"), getMe)
+  .put(authorize("student", "advisor", "admin"), profileUpload, updateMe);
 
-router.put("/me/password", updatePassword);
+router.route("/me/password")
+  .put(authorize("student", "advisor", "admin"), updatePassword);
 
-router.put("/me/settings", updateSettings);
+router.route("/me/settings")
+  .put(authorize("student", "advisor", "admin"), updateSettings);
 
 // ======================
 //  USER MANAGEMENT ROUTES
 // ======================
-router.get("/", getUsers);
+router.route("/")
+  .get(authorize("advisor", "admin"), getUsers);
 
-router.get("/:id", getUser);
+router.route("/:id")
+  .get(authorize("advisor", "admin"), getUser);
 
-router.post("/", createUser);
+// ======================
+//  ADMIN-ONLY ROUTES
+// ======================
+router.use(authorize("admin", "advisor"));
 
-router.put("/:id", updateUser)
+router.route("/")
+  .post(createUser);
 
-router.delete("/:id", deleteUser);
+router.route("/:id")
+  .put(profileUpload, updateUser)
+  .delete(deleteUser);
 
-router.put("/deactivate/:id", deactivateUser);
+router.route("/:id/deactivate")
+  .put(deactivateUser);
 
-router.put("/reactivate/:id", reactivateUser);
+router.route("/:id/reactivate")
+  .put(reactivateUser);
 
 // ======================
 //  ANALYTICS ROUTES
 // ======================
-router.get("/analytics/overview", getSystemOverview);
+router.route('/analytics/overview')
+  .get(getSystemOverview);
 
-router.get("/analytics/advisor", getAdvisorOverview);
+router.route('/analytics/advisor')
+  .get(authorize("advisor", "admin"), getAdvisorOverview);
 
 module.exports = router;

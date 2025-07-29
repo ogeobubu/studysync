@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 const {
   getAllCourses,
@@ -8,19 +8,20 @@ const {
   deleteCourse,
   getCoursesByPartAndSemester,
   getCoursesByProgram
-} = require("../controllers/courseController");
+} = require('../controllers/courseController');
+const { protect, authorize } = require('../middlewares/authMiddleware');
 
 // Public routes
-router.get("/", getAllCourses);
-router.get("/:id", getCourse);
+router.get('/', getAllCourses);
+router.get('/:id', getCourse);
 
 // Protected routes for admin users
-router.post("/", createCourse);
-router.put("/:id", updateCourse);
-router.delete("/:id", deleteCourse);
+router.post('/', protect, authorize('admin'), createCourse);
+router.put('/:id', protect, authorize('admin'), updateCourse);
+router.delete('/:id', protect, authorize('admin'), deleteCourse);
 
 // Route to fetch courses by part and semester
-router.get("/filter", getCoursesByPartAndSemester);
-router.get("/programs/:id", getCoursesByProgram);
+router.get('/filter', getCoursesByPartAndSemester);
+router.get('/programs/:id', getCoursesByProgram);
 
 module.exports = router;

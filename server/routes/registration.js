@@ -6,14 +6,15 @@ const {
   updateGrade,
   getStudentRegistrations,
 } = require("../controllers/registrationController");
+const { protect, authorize } = require("../middlewares/authMiddleware");
 
 // Base URL: /api/v1/registrations
 
 // Student routes
-router.get("/student/:id", getStudentRegistrations);
-router.post("/", registerCourse);
+router.get("/student/:id", protect, getStudentRegistrations);
+router.post("/", protect, registerCourse);
 
 // Admin routes
-router.put("/grade/:id", updateGrade);
+router.put("/:id/grade", protect, authorize("student"), updateGrade);
 
 module.exports = router;
