@@ -33,15 +33,11 @@ router.get("/", protect, authorize("advisor", "admin"), getUsers);
 
 router.get("/:id", protect, authorize("advisor", "admin"), getUser);
 
-// ======================
-//  ADMIN-ONLY ROUTES
-// ======================
-router.use(protect, authorize("admin", "advisor"));
-
-router.post("/", createUser);
+router.post("/", protect, authorize("admin", "advisor"), createUser);
 
 router.put("/:id", protect, profileUpload, updateUser)
-  router.delete("/:id", protect, deleteUser);
+
+router.delete("/:id", protect, authorize("admin", "advisor"), deleteUser);
 
 router.put("/:id/deactivate", protect, deactivateUser);
 
