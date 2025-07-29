@@ -7,21 +7,20 @@ const {
   startChat,
   closeChat
 } = require("../controllers/chatController");
-const { protect, authorize } = require("../middlewares/authMiddleware");
 
 // Get all chats for current user
-router.get("/", protect, getChats);
+router.get("/", getChats);
 
 // Get messages for specific chat
-router.get("/:chatId", protect, getChatMessages);
+router.get("/:id", getChatMessages);
 
 // Send message in chat
-router.post("/:chatId/messages", protect, sendMessage);
+router.post("/messages/:id", sendMessage);
 
 // Start new chat (student initiates with advisor)
-router.post("/start", protect, authorize("student", "admin"), startChat);
+router.post("/start", startChat);
 
 // Close chat
-router.patch("/:chatId/close", protect, closeChat);
+router.patch("/close", closeChat);
 
 module.exports = router;

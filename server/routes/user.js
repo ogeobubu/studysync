@@ -15,29 +15,28 @@ const {
   getSystemOverview,
   getAdvisorOverview
 } = require("../controllers/userController");
-const { protect, authorize } = require("../middlewares/authMiddleware");
 const { profileUpload } = require("../utils/multer");
 
 
-router.get("/me", protect, authorize("student", "advisor", "admin"), getMe)
-  router.put("/me", protect, authorize("student", "advisor", "admin"), profileUpload, updateMe);
+router.get("/me", getMe)
+  router.put("/me", profileUpload, updateMe);
 
-router.put("/me/password", protect, authorize("student", "advisor", "admin"), updatePassword);
+router.put("/me/password", updatePassword);
 
-router.put("/me/settings", protect, authorize("student", "advisor", "admin"), updateSettings);
+router.put("/me/settings", updateSettings);
 
 // ======================
 //  USER MANAGEMENT ROUTES
 // ======================
-router.get("/", protect, authorize("advisor", "admin"), getUsers);
+router.get("/", getUsers);
 
-router.get("/:id", protect, authorize("advisor", "admin"), getUser);
+router.get("/:id", getUser);
 
-router.post("/", protect, authorize("admin", "advisor"), createUser);
+router.post("/", createUser);
 
-router.put("/:id", protect, profileUpload, updateUser)
+router.put("/:id", updateUser)
 
-router.delete("/:id", protect, authorize("admin", "advisor"), deleteUser);
+router.delete("/:id", deleteUser);
 
 router.put("/:id/deactivate", protect, deactivateUser);
 
@@ -46,8 +45,8 @@ router.put("/:id/reactivate", protect, reactivateUser);
 // ======================
 //  ANALYTICS ROUTES
 // ======================
-router.get("/analytics/overview", protect, getSystemOverview);
+router.get("/analytics/overview", getSystemOverview);
 
-router.get("/analytics/advisor", protect, authorize("advisor", "admin"), getAdvisorOverview);
+router.get("/analytics/advisor", getAdvisorOverview);
 
 module.exports = router;

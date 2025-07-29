@@ -5,15 +5,14 @@ const {
   markAsRead,
   markAllAsRead
 } = require('../controllers/notificationController');
-const { protect } = require('../middlewares/authMiddleware');
 
 // Get user notifications
-router.get("/:id", protect, getUserNotifications);
+router.get("/:id", getUserNotifications);
 
 // Mark notification as read
-router.patch("/:id/read", protect, markAsRead);
+router.patch("/read/:id", markAsRead);
 
 // Mark all notifications as read
-router.patch("/user/:id/read-all", protect, markAllAsRead);
+router.patch("/user/read-all/:id", markAllAsRead);
 
 module.exports = router;

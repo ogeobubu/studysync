@@ -11,21 +11,20 @@ const {
   getAdvisorPendingRequests,
   updateRequestStatus
 } = require("../controllers/advisingController");
-const { protect, authorize } = require("../middlewares/authMiddleware");
 
 // Student routes
-router.post("/", protect, authorize("student"), createAdvisingRequest)
-router.get("/", protect, authorize("advisor", "admin"), getAllAdvisingRequests);
+router.post("/", createAdvisingRequest)
+router.get("/", getAllAdvisingRequests);
 
-router.get("/my", protect, authorize("student"), getStudentAdvisingRequests);
-router.get("/pending", protect, authorize("admin", "advisor"), getPendingRequests);
-router.get("/advisor/my-pending", protect, authorize("advisor"), getAdvisorPendingRequests);
+router.get("/my", getStudentAdvisingRequests);
+router.get("/pending", getPendingRequests);
+router.get("/advisor/my-pending", getAdvisorPendingRequests);
 
 
-router.get("/:id", protect, getRequestById)
-router.delete("/:id", protect, authorize("admin", "student"), deleteAdvisingRequest);
+router.get("/:id",getRequestById)
+router.delete("/:id", deleteAdvisingRequest);
 
-router.patch("/:id/assign", protect, authorize("admin", "advisor"), assignAdvisor);
-router.patch("/:id/status", protect, authorize("admin", "advisor"), updateRequestStatus);
+router.patch("/:id/assign", assignAdvisor);
+router.patch("/:id/status", updateRequestStatus);
 
 module.exports = router;
