@@ -1,16 +1,14 @@
 {
   "scripts": {
-    "install-server": "npm install --prefix server --omit=dev",
-"install-client": "npm install --prefix client --omit=dev",
+    "install-server": "cd server && npm install --omit=dev",
+    "install-client": "cd client && npm install --omit=dev",
     "install-all": "npm run install-server && npm run install-client",
-
-    "build-client": "npm run install-client && npm run build --prefix client",
+    "build-client": "cd client && npm run build",
     "build": "npm run install-all && npm run build-client",
-
-    "start": "node server/app.js",
-
-    "dev": "npm run dev-server & npm run dev-client",
-    "dev-server": "node server/app.js",
-    "dev-client": "npm run dev --prefix client"
+    "start": "cd server && node app.js",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\""
+  },
+  "engines": {
+    "node": "18.x"
   }
 }

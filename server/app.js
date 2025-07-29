@@ -21,6 +21,15 @@ dotenv.config();
 const createApp = () => {
   const app = express();
 
+    // Add this right after your express() initialization
+const originalUse = app.use;
+app.use = function(path, ...args) {
+  if (typeof path === 'string' && (path.startsWith('http://') || path.startsWith('https://'))) {
+    throw new Error(`Invalid route path: ${path} - Express routes must be paths, not full URLs`);
+  }
+  return originalUse.call(this, path, ...args);
+};
+
   // Enhanced CORS configuration
   app.use(cors({
     origin: process.env.CORS_ORIGIN || "*",
@@ -37,6 +46,17 @@ const createApp = () => {
 
   // Connect to database
   connectDB(process.env.MONGO_URI);
+
+  // Debug code - remove after fixing
+console.log('All routes being registered:');
+const routes = [
+  authRoutes, notifications, courseRoutes, advisingRoutes, 
+  appointmentsRoutes, userRoutes, registrationRoute, 
+  recommendationRoute, chatRoutes
+];
+routes.forEach(router => {
+  console.log(router.stack.map(layer => layer.route?.path));
+});
 
   // API Routes - ensure none of these route paths contain full URLs
   app.use("/api/auth", authRoutes);
@@ -64,7 +84,15 @@ const createApp = () => {
   }
 
   // Error handling - must be last middleware
-  app.use(errorHandler);
+// Replace your current error handler with:
+app.use((err, req, res, next) => {
+  if (err.message.includes('path-to-regexp')) {
+    console.error('Invalid route path detected');
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
+  // Your existing error handling
+  errorHandler(err, req, res, next);
+});
 
   return app;
 };
