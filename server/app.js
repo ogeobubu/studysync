@@ -15,20 +15,30 @@ const recommendationRoute = require("./routes/recommendations");
 const chatRoutes = require("./routes/chatRoutes");
 const dotenv = require("dotenv");
 
+// Load environment variables first
 dotenv.config();
 
 const createApp = () => {
   const app = express();
 
-  app.use(cors());
-  app.use(logger("dev"));
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: false }));
+  // Enhanced CORS configuration
+  app.use(cors({
+    origin: process.env.CORS_ORIGIN || "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  }));
+
+  // Logging
+  app.use(logger(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+
+  // Body parsing
+  app.use(express.json({ limit: "10mb" }));
+  app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
   // Connect to database
   connectDB(process.env.MONGO_URI);
 
-  // Routes
+  // API Routes - ensure none of these route paths contain full URLs
   app.use("/api/auth", authRoutes);
   app.use("/api/notifications", notifications);
   app.use("/api/courses", courseRoutes);
@@ -38,16 +48,22 @@ const createApp = () => {
   app.use("/api/registrations", registrationRoute);
   app.use("/api/recommendations", recommendationRoute);
   app.use("/api/chats", chatRoutes);
+
+  // Static files
   app.use("/public", express.static(path.join(__dirname, "public")));
 
+  // Production configuration
   if (process.env.NODE_ENV === "production") {
-    const path = require("path");
+    // Serve static files from client
     app.use(express.static(path.join(__dirname, "..", "client", "dist")));
 
+    // Handle SPA routing - must come after all other routes
     app.get("*", (req, res) => {
-      res.sendFile(path.join(__dirname, "..", "client", "dist", "index.html"));
+      res.sendFile(path.resolve(__dirname, "..", "client", "dist", "index.html"));
     });
   }
+
+  // Error handling - must be last middleware
   app.use(errorHandler);
 
   return app;
@@ -55,7 +71,21 @@ const createApp = () => {
 
 const app = createApp();
 const PORT = process.env.PORT || 5001;
+const HOST = process.env.HOST || "0.0.0.0";
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Server running on ${HOST}:${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+});
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection:", err);
+  process.exit(1);
+});
+
+// Handle uncaught exceptions
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+  process.exit(1);
 });
