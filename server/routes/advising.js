@@ -24,7 +24,7 @@ router.get("/advisor/my-pending", getAdvisorPendingRequests);
 router.get("/:id",getRequestById)
 router.delete("/:id", deleteAdvisingRequest);
 
-router.patch("/:id/assign", assignAdvisor);
-router.patch("/:id/status", updateRequestStatus);
+router.patch("/assign/:id", assignAdvisor);
+router.patch("/status/:id", updateRequestStatus);
 
 module.exports = router;

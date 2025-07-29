@@ -14,6 +14,6 @@ router.get("/student/:id", getStudentRegistrations);
 router.post("/", registerCourse);
 
 // Admin routes
-router.put("/:id/grade", updateGrade);
+router.put("/grade/:id", updateGrade);
 
 module.exports = router;
