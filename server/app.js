@@ -47,16 +47,19 @@ app.use = function(path, ...args) {
   // Connect to database
   connectDB(process.env.MONGO_URI);
 
-  // Debug code - remove after fixing
-console.log('All routes being registered:');
-const routes = [
-  authRoutes, notifications, courseRoutes, advisingRoutes, 
-  appointmentsRoutes, userRoutes, registrationRoute, 
-  recommendationRoute, chatRoutes
-];
-routes.forEach(router => {
-  console.log(router.stack.map(layer => layer.route?.path));
-});
+const validateRoutePaths = (req, res, next) => {
+  const originalUse = app.use;
+  app.use = function(path, ...args) {
+    if (typeof path === 'string' && (path.includes('://') || path.includes('.') && !path.startsWith('/'))) {
+      console.error('❌ Invalid route path detected:', path);
+      throw new Error(`Express routes must be paths (like '/api'), not URLs (like 'https://...')`);
+    }
+    return originalUse.call(this, path, ...args);
+  };
+  next();
+};
+
+app.use(validateRoutePaths);
 
   // API Routes - ensure none of these route paths contain full URLs
   app.use("/api/auth", authRoutes);
