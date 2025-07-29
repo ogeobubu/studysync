@@ -1,6 +1,6 @@
 import { createContext, useContext, type ReactNode, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { http, setAuthData } from "../api/http";
+import { http, setAuthData } from "../api/httpEnhanced";
 import { useHttp } from "../api/useHttp"
 import { jwtDecode } from 'jwt-decode';
 import { Role } from "../types";
@@ -17,20 +17,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const storedToken = JSON.parse(localStorage.getItem('authToken') || 'null');
+      const isDemo = http.isDemoMode();
+      const tokenKey = isDemo ? 'demo_token' : 'authToken';
+      const storedToken = localStorage.getItem(tokenKey);
+
       if (storedToken) {
         try {
-          const decoded = jwtDecode<JwtPayload>(storedToken);
-          setToken(storedToken);
-          setAuthData({ token: storedToken });
+          if (isDemo) {
+            // For demo mode, get user from demo storage
+            const demoUser = JSON.parse(localStorage.getItem('demo_current_user') || 'null');
+            if (demoUser) {
+              setToken(storedToken);
+              setUser(demoUser);
+              setAuthData({ token: storedToken });
+            }
+          } else {
+            // For real mode, decode JWT and fetch user
+            const decoded = jwtDecode<JwtPayload>(JSON.parse(storedToken));
+            setToken(JSON.parse(storedToken));
+            setAuthData({ token: JSON.parse(storedToken) });
 
-          if (!user) {
-            const response = await http.get('/users/me');
-            setUser(response.data.data);
+            if (!user) {
+              const response = await http.get('/users/me');
+              setUser(response.data.data);
+            }
           }
         } catch (err) {
           console.error('Invalid token:', err);
-          localStorage.removeItem('authToken');
+          localStorage.removeItem(tokenKey);
         }
       }
       setLoading(false);
@@ -47,7 +61,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const { token, user } = data;
         setUser(user);
         setToken(token);
-        localStorage.setItem('authToken', JSON.stringify(token));
+        
+        const isDemo = http.isDemoMode();
+        const tokenKey = isDemo ? 'demo_token' : 'authToken';
+        localStorage.setItem(tokenKey, JSON.stringify(token));
         setAuthData({ token });
 
         // Redirect based on role
@@ -79,8 +96,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authData');
+    
+    const isDemo = http.isDemoMode();
+    if (isDemo) {
+      localStorage.removeItem('demo_token');
+      localStorage.removeItem('demo_current_user');
+      localStorage.removeItem('demo_authData');
+    } else {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authData');
+    }
+    
     setAuthData(null);
     navigate('/login');
   };
