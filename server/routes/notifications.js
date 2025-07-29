@@ -11,12 +11,12 @@ const { protect } = require('../middlewares/authMiddleware');
 router.use(protect);
 
 // Get user notifications
-router.get('/:id', getUserNotifications);
+router.get("/:id", getUserNotifications);
 
 // Mark notification as read
-router.patch('/:id/read', markAsRead);
+router.patch("/:id/read", markAsRead);
 
 // Mark all notifications as read
-router.patch('/user/:id/read-all', markAllAsRead);
+router.patch("/user/:id/read-all", markAllAsRead);
 
 module.exports = router;

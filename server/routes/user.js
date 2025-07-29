@@ -26,50 +26,39 @@ router.use(protect);
 // ======================
 //  CURRENT USER ROUTES
 // ======================
-router.route("/me")
-  .get(authorize("student", "advisor", "admin"), getMe)
-  .put(authorize("student", "advisor", "admin"), profileUpload, updateMe);
+router.get("/me", authorize("student", "advisor", "admin"), getMe)
+  router.put("/me", authorize("student", "advisor", "admin"), profileUpload, updateMe);
 
-router.route("/me/password")
-  .put(authorize("student", "advisor", "admin"), updatePassword);
+router.put("/me/password", authorize("student", "advisor", "admin"), updatePassword);
 
-router.route("/me/settings")
-  .put(authorize("student", "advisor", "admin"), updateSettings);
+router.put("/me/settings", authorize("student", "advisor", "admin"), updateSettings);
 
 // ======================
 //  USER MANAGEMENT ROUTES
 // ======================
-router.route("/")
-  .get(authorize("advisor", "admin"), getUsers);
+router.get("/", authorize("advisor", "admin"), getUsers);
 
-router.route("/:id")
-  .get(authorize("advisor", "admin"), getUser);
+router.get("/:id", authorize("advisor", "admin"), getUser);
 
 // ======================
 //  ADMIN-ONLY ROUTES
 // ======================
 router.use(authorize("admin", "advisor"));
 
-router.route("/")
-  .post(createUser);
+router.post("/", createUser);
 
-router.route("/:id")
-  .put(profileUpload, updateUser)
-  .delete(deleteUser);
+router.put("/:id", profileUpload, updateUser)
+  router.delete("/:id", deleteUser);
 
-router.route("/:id/deactivate")
-  .put(deactivateUser);
+router.put("/:id/deactivate", deactivateUser);
 
-router.route("/:id/reactivate")
-  .put(reactivateUser);
+router.put("/:id/reactivate", reactivateUser);
 
 // ======================
 //  ANALYTICS ROUTES
 // ======================
-router.route('/analytics/overview')
-  .get(getSystemOverview);
+router.get("/analytics/overview", getSystemOverview);
 
-router.route('/analytics/advisor')
-  .get(authorize("advisor", "admin"), getAdvisorOverview);
+router.get("/analytics/advisor", authorize("advisor", "admin"), getAdvisorOverview);
 
 module.exports = router;

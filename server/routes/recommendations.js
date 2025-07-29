@@ -3,6 +3,6 @@ const router = express.Router();
 const { getRecommendations } = require('../controllers/recommendationController');
 const { protect } = require('../middlewares/authMiddleware');
 
-router.get('/', protect, getRecommendations);
+router.get("/", protect, getRecommendations);
 
 module.exports = router;
