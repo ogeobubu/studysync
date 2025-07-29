@@ -13,6 +13,7 @@ import ChatLayout from '../layouts/ChatLayout';
 
 import AdminRoutes from './AdminRoutes';
 import AdvisorRoutes from './AdvisorRoutes';
+
 import StudentRoutes from './StudentRoutes';
 
 import ChatListPage from '../pages/chat/ChatListPage';
