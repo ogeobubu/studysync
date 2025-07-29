@@ -336,11 +336,8 @@ A: The demo chat updates when you send messages. In production, this would use W
 A: Ensure you've selected valid session and semester values, and that you're not already registered for the course.
 
 ### Getting Help
-
-- 📧 Email: support@academicconnect.com
-- 💬 Discord: [Join our community](https://discord.gg/academicconnect)
-- 📚 Documentation: [Full Documentation](https://docs.academicconnect.com)
-- 🐛 Bug Reports: [GitHub Issues](https://github.com/yourusername/academic-connect/issues)
+- 💬 Discord: [Join our community](https://discord.gg/ogeobubu)
+- 🐛 Bug Reports: [GitHub Issues](https://github.com/ogeobubu/studysync/issues)
 
 ## 🙏 Acknowledgments
 
