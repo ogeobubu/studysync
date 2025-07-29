@@ -38,9 +38,9 @@ router.put("/:id", updateUser)
 
 router.delete("/:id", deleteUser);
 
-router.put("/:id/deactivate", protect, deactivateUser);
+router.put("/:id/deactivate", deactivateUser);
 
-router.put("/:id/reactivate", protect, reactivateUser);
+router.put("/:id/reactivate", reactivateUser);
 
 // ======================
 //  ANALYTICS ROUTES
