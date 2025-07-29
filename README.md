@@ -2,7 +2,7 @@
 
 A comprehensive academic advising and management system built with React and Node.js, designed to connect students with academic advisors and streamline the academic guidance process.
 
-![Academic Connect Dashboard](https://i.ibb.co/LD6XLJyZ/Screenshot-2025-07-29-at-17-34-07.png?text=Academic+Connect+Dashboard)
+![Academic Connect Dashboard](https://i.ibb.co/LD6XLJyZ/Screenshot-2025-07-29-at-17-34-07.png)
 
 ## 🌟 Features
 
