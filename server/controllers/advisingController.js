@@ -119,7 +119,7 @@ exports.getPendingRequests = asyncHandler(async (req, res, next) => {
 exports.getAdvisorPendingRequests = asyncHandler(async (req, res, next) => {
   const requests = await Advising.find({ 
     advisor: req.user._id,
-    status: 'Pending'
+    status: 'Assigned'
   })
     .populate('user', 'name email')
     .sort({ createdAt: -1 });

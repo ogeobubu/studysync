@@ -1,3 +1,4 @@
+// client/src/services/demoData.ts
 import { Role } from '../types';
 
 // Demo users
@@ -109,6 +110,26 @@ export const DEMO_COURSES = [
     semester: 'Second',
     prerequisites: ['MTH 201'],
     program: 'Computer Science with Mathematics'
+  },
+  {
+    _id: 'course-6',
+    code: 'CSC 401',
+    title: 'Software Engineering',
+    description: 'Software development methodologies and project management',
+    credits: 3,
+    semester: 'First',
+    prerequisites: ['CSC 301'],
+    program: 'Computer Science with Mathematics'
+  },
+  {
+    _id: 'course-7',
+    code: 'CSC 402',
+    title: 'Artificial Intelligence',
+    description: 'Introduction to AI concepts and machine learning',
+    credits: 3,
+    semester: 'Second',
+    prerequisites: ['CSC 301'],
+    program: 'Computer Science with Mathematics'
   }
 ];
 
@@ -142,10 +163,21 @@ export const DEMO_REGISTRATIONS = [
     courseId: DEMO_COURSES[2],
     session: '2024/2025',
     semester: 'First',
+    score: 92,
+    grade: 'A',
+    gradePoint: 5.0,
+    createdAt: '2024-09-15T00:00:00.000Z'
+  },
+  {
+    _id: 'reg-4',
+    studentId: 'student-demo-123',
+    courseId: DEMO_COURSES[3],
+    session: '2024/2025',
+    semester: 'Second',
     score: undefined, // Not graded yet
     grade: undefined,
     gradePoint: undefined,
-    createdAt: '2024-09-15T00:00:00.000Z'
+    createdAt: '2024-11-15T00:00:00.000Z'
   }
 ];
 
@@ -193,6 +225,24 @@ export const DEMO_ADVISING_REQUESTS = [
     notes: {
       advisorNotes: 'Scheduled meeting for Thursday 2 PM'
     }
+  },
+  {
+    _id: 'req-3',
+    user: {
+      _id: 'student-other-456',
+      name: 'Jane Doe',
+      email: 'jane.student@demo.com',
+      avatar: 'default.jpg'
+    },
+    reason: 'graduation-check',
+    additionalInfo: 'Need to verify graduation requirements',
+    preferredDays: ['monday', 'tuesday'],
+    preferredTimeRange: { start: '09:00', end: '11:00' },
+    status: 'Pending',
+    createdAt: '2024-11-20T14:20:00.000Z',
+    updatedAt: '2024-11-20T14:20:00.000Z',
+    advisor: null,
+    notes: {}
   }
 ];
 
@@ -251,6 +301,17 @@ export const DEMO_MESSAGES = [
     },
     content: 'I\'m particularly interested in machine learning and data science courses.',
     timestamp: '2024-11-20T11:45:00.000Z'
+  },
+  {
+    _id: 'msg-4',
+    chatId: 'chat-1',
+    sender: {
+      _id: 'advisor-demo-456',
+      name: 'Dr. Sarah Johnson',
+      profilePhoto: 'default.jpg'
+    },
+    content: 'Great choices! I recommend starting with our Artificial Intelligence course (CSC 402) and Mathematical Methods. These will give you a solid foundation.',
+    timestamp: '2024-11-20T12:00:00.000Z'
   }
 ];
 
@@ -269,40 +330,130 @@ export const DEMO_ANALYTICS = {
     commonTopics: [
       { topic: 'Course Selection', count: 15 },
       { topic: 'Academic Concerns', count: 8 },
-      { topic: 'Career Guidance', count: 5 }
+      { topic: 'Career Guidance', count: 5 },
+      { topic: 'Graduation Planning', count: 3 }
     ]
   }
 };
 
+// Additional demo users for variety
+export const DEMO_ADDITIONAL_USERS = [
+  {
+    _id: 'advisor-demo-789',
+    name: 'Prof. David Wilson',
+    email: 'david.advisor@demo.com',
+    role: Role.ADVISOR,
+    specialization: 'Computer Engineering',
+    phoneNumber: '+234-804-567-8901',
+    profilePhoto: 'default.jpg',
+    active: true,
+    createdAt: '2019-08-20T00:00:00.000Z',
+    updatedAt: '2024-12-01T00:00:00.000Z'
+  },
+  {
+    _id: 'student-demo-456',
+    name: 'Mary Johnson',
+    email: 'mary.student@demo.com',
+    role: Role.STUDENT,
+    matricNumber: 'CS/ENG/23/5678',
+    program: 'Computer Science with Economics',
+    level: 'Part II',
+    phoneNumber: '+234-805-678-9012',
+    profilePhoto: 'default.jpg',
+    active: true,
+    createdAt: '2023-09-01T00:00:00.000Z',
+    updatedAt: '2024-12-01T00:00:00.000Z'
+  }
+];
+
 // Initialize demo data in localStorage
 export const initializeDemoData = () => {
-  // Only initialize if no demo data exists
-  if (!localStorage.getItem('demo_initialized')) {
-    localStorage.setItem('demo_users', JSON.stringify(DEMO_USERS));
+  try {
+    // Check if already initialized
+    if (localStorage.getItem('demo_initialized') === 'true') {
+      return;
+    }
+
+    console.log('Initializing demo data...');
+
+    // Combine all users
+    const allUsers = {
+      ...DEMO_USERS,
+      // Add additional users as separate entries
+      advisor2: DEMO_ADDITIONAL_USERS[0],
+      student2: DEMO_ADDITIONAL_USERS[1]
+    };
+
+    // Initialize all demo data
+    localStorage.setItem('demo_users', JSON.stringify(allUsers));
     localStorage.setItem('demo_courses', JSON.stringify(DEMO_COURSES));
     localStorage.setItem('demo_registrations', JSON.stringify(DEMO_REGISTRATIONS));
     localStorage.setItem('demo_advising_requests', JSON.stringify(DEMO_ADVISING_REQUESTS));
     localStorage.setItem('demo_chats', JSON.stringify(DEMO_CHATS));
     localStorage.setItem('demo_messages', JSON.stringify(DEMO_MESSAGES));
     localStorage.setItem('demo_analytics', JSON.stringify(DEMO_ANALYTICS));
+    
+    // Mark as initialized
     localStorage.setItem('demo_initialized', 'true');
+    
+    console.log('Demo data initialized successfully');
+  } catch (error) {
+    console.error('Error initializing demo data:', error);
   }
 };
 
 // Helper functions to get demo data
 export const getDemoUser = (role: Role) => {
-  const users = JSON.parse(localStorage.getItem('demo_users') || '{}');
-  return users[role.toLowerCase()];
+  try {
+    const users = JSON.parse(localStorage.getItem('demo_users') || '{}');
+    return users[role.toLowerCase()];
+  } catch (error) {
+    console.error('Error getting demo user:', error);
+    return null;
+  }
 };
 
 export const getDemoData = (key: string) => {
-  return JSON.parse(localStorage.getItem(`demo_${key}`) || '[]');
+  try {
+    const data = localStorage.getItem(`demo_${key}`);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error(`Error getting demo data for ${key}:`, error);
+    return [];
+  }
 };
 
 export const setDemoData = (key: string, data: any) => {
-  localStorage.setItem(`demo_${key}`, JSON.stringify(data));
+  try {
+    localStorage.setItem(`demo_${key}`, JSON.stringify(data));
+  } catch (error) {
+    console.error(`Error setting demo data for ${key}:`, error);
+  }
 };
 
 export const generateId = () => {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
+};
+
+// Reset demo data function
+export const resetDemoData = () => {
+  try {
+    // Clear all demo-related localStorage items
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('demo_')) {
+        keysToRemove.push(key);
+      }
+    }
+    
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    // Reinitialize
+    initializeDemoData();
+    
+    console.log('Demo data reset successfully');
+  } catch (error) {
+    console.error('Error resetting demo data:', error);
+  }
 };

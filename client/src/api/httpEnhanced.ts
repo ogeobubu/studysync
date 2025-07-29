@@ -8,11 +8,20 @@ interface ApiResponse<T> {
   message?: string;
 }
 
-// Check if we're in demo mode
+// Check if we're in demo mode - more robust detection
 const isDemoMode = () => {
-  return localStorage.getItem('demo_mode') === 'true' || 
-         import.meta.env.VITE_DEMO_MODE === 'true' ||
-         window.location.search.includes('demo=true');
+  // Check multiple sources for demo mode
+  const localStorageDemo = localStorage.getItem('demo_mode') === 'true';
+  const envDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+  const urlDemo = window.location.search.includes('demo=true');
+  
+  const isDemo = localStorageDemo || envDemo || urlDemo;
+  
+  if (isDemo) {
+    console.log('Demo mode active:', { localStorageDemo, envDemo, urlDemo });
+  }
+  
+  return isDemo;
 };
 
 const http = axios.create({
@@ -111,6 +120,8 @@ http.interceptors.response.use(
 const routeDemoRequest = async (config: AxiosRequestConfig): Promise<any> => {
   const { url = '', method = 'GET', data } = config;
   const cleanUrl = url.replace(/^\/+/, ''); // Remove leading slashes
+
+  console.log(`Demo API call: ${method} ${cleanUrl}`, data);
 
   try {
     // Auth endpoints
@@ -229,6 +240,7 @@ const routeDemoRequest = async (config: AxiosRequestConfig): Promise<any> => {
       }
     });
   } catch (error) {
+    console.error('Demo API error:', error);
     return Promise.reject(error);
   }
 };
@@ -239,20 +251,19 @@ async function request<T>(config: AxiosRequestConfig): Promise<T> {
     let response;
     
     if (isDemoMode()) {
+      console.log('Using demo service for request:', config.url);
       // Use demo service
       response = await routeDemoRequest(config);
+      // Demo service already returns the correct format
+      return response.data;
     } else {
+      console.log('Using real API for request:', config.url);
       // Use real API
-      response = await http.request<ApiResponse<T>>(config);
-    }
-    
-    // Handle response format differences between demo and real API
-    if (isDemoMode()) {
-      return response.data.data;
-    } else {
-      return response.data.data;
+      const apiResponse = await http.request<ApiResponse<T>>(config);
+      return apiResponse.data;
     }
   } catch (error) {
+    console.error('Request error:', error);
     throw error;
   }
 }
@@ -265,6 +276,7 @@ const enhancedHttp = {
     localStorage.setItem('demo_mode', enabled.toString());
     // Clear auth data when switching modes
     setAuthData(null);
+    console.log(`Demo mode ${enabled ? 'enabled' : 'disabled'}`);
     window.location.reload();
   },
   request

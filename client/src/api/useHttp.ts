@@ -1,3 +1,4 @@
+// client/src/api/useHttp.ts
 import {
   useMutation,
   type UseMutationResult,
@@ -5,96 +6,127 @@ import {
   useQueryClient,
   type UseQueryResult,
 } from "@tanstack/react-query";
-import { http } from "./http";
+import httpService from "./httpService";
 import toast from "react-hot-toast";
-import axios from "axios";
-import type { HttpMethod, HttpTypes } from "../types/index.ts";
+import type { HttpMethod } from "../types";
 
-// === Overloads ===
+interface UseHttpOptions<TResponse> {
+  onSuccess?: (data: TResponse) => void;
+  onError?: (error: any) => void;
+}
+
+// GET request overload - returns UseQueryResult
 export function useHttp<TResponse>(args: {
   url: string;
   method?: "GET";
-  options?: HttpTypes<TResponse>["options"];
+  options?: UseHttpOptions<TResponse>;
 }): UseQueryResult<TResponse>;
 
-export function useHttp<TResponse, TPayload>(args: {
+// Non-GET request overload - returns UseMutationResult
+export function useHttp<TResponse, TPayload = any>(args: {
   url: string;
   method: Exclude<HttpMethod, "GET">;
-  options?: HttpTypes<TResponse, TPayload>["options"];
+  options?: UseHttpOptions<TResponse>;
 }): UseMutationResult<TResponse, unknown, TPayload>;
 
-// === Implementation ===
-export function useHttp<TResponse, TPayload = unknown>({
+// Implementation
+export function useHttp<TResponse, TPayload = any>({
   url,
   method = "GET",
   options = {},
-}: HttpTypes<TResponse, TPayload>) {
+}: {
+  url: string;
+  method?: HttpMethod;
+  options?: UseHttpOptions<TResponse>;
+}) {
   const queryClient = useQueryClient();
 
-  const commonOptions = {
-    onError: handleError,
-    ...options,
-  };
-
+  // GET requests use useQuery
   if (method === "GET") {
     return useQuery<TResponse>({
       queryKey: [url],
-      queryFn: () => http.get<TResponse>(url).then((res) => res.data),
-      refetchOnWindowFocus: true,
+      queryFn: async () => {
+        try {
+          const response = await httpService.get<TResponse>(url);
+          return response.data;
+        } catch (error) {
+          // Don't show toast for query errors - let components handle them
+          throw error;
+        }
+      },
+      refetchOnWindowFocus: false,
       refetchOnMount: true,
       refetchOnReconnect: true,
-      ...commonOptions,
-    });
+      retry: 1,
+      ...options,
+    }) as UseQueryResult<TResponse>;
   }
 
-  const mutationMap: Record<
-    Exclude<HttpMethod, "GET">,
-    (data: TPayload) => Promise<TResponse>
-  > = {
-    POST: (data: TPayload) =>
-      http.post<TResponse>(url, data).then((res) => res.data),
-    PATCH: (data: TPayload) =>
-      http.patch<TResponse>(url, data).then((res) => res.data),
-    PUT: (data: TPayload) =>
-      http.put<TResponse>(url, data).then((res) => res.data),
-    DELETE: (_: TPayload) =>
-      http.delete<TResponse>(url).then((res) => res.data),
+  // Non-GET requests use useMutation
+  const mutationFn = async (data: TPayload): Promise<TResponse> => {
+    try {
+      let response;
+      
+      switch (method) {
+        case "POST":
+          response = await httpService.post<TResponse>(url, data);
+          break;
+        case "PUT":
+          response = await httpService.put<TResponse>(url, data);
+          break;
+        case "PATCH":
+          response = await httpService.patch<TResponse>(url, data);
+          break;
+        case "DELETE":
+          response = await httpService.delete<TResponse>(url);
+          break;
+        default:
+          throw new Error(`Unsupported method: ${method}`);
+      }
+      
+      return response.data;
+    } catch (error) {
+      handleMutationError(error);
+      throw error;
+    }
   };
-
-  const mutationFn = mutationMap[method as Exclude<HttpMethod, "GET">];
 
   return useMutation<TResponse, unknown, TPayload>({
     mutationFn,
     onSuccess: (data) => {
+      // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: [url] });
-      options?.onSuccess?.(data);
+      
+      // Call custom success handler
+      if (options.onSuccess) {
+        options.onSuccess(data);
+      }
     },
-    ...commonOptions,
-  });
+    onError: (error) => {
+      // Call custom error handler
+      if (options.onError) {
+        options.onError(error);
+      }
+    },
+  }) as UseMutationResult<TResponse, unknown, TPayload>;
 }
 
-const handleError = (error: unknown) => {
+// Error handler for mutations (shows toast)
+function handleMutationError(error: any) {
+  console.error('HTTP Mutation Error:', error);
 
-  if (axios.isAxiosError(error)) {
-    // Check if the request was aborted due to timeout
-    if (error.code === "ECONNABORTED") {
-      toast.error("Request timed out. Please try again.");
-      return;
-    }
+  let message = 'An error occurred. Please try again.';
 
-    // Access the error message safely via optional chaining
-    const message =
-      error.response?.data?.data?.message || error.response?.data?.data?.error ||
-      (error.message
-        ? error.message
-        : "An error occurred. Please try again later.");
-
-    toast.error(message);
-  } else if (error instanceof Error) {
-    // Fallback for non-Axios errors (standard Error instances)
-    toast.error(error.message || "An error occurred. Please try again later.");
-  } else {
-    // Generic fallback if error shape is unknown
-    toast.error("An error occurred. Please try again later.");
+  if (error?.response?.data?.message) {
+    message = error.response.data.message;
+  } else if (error?.response?.data?.data?.message) {
+    message = error.response.data.data.message;
+  } else if (error?.message) {
+    message = error.message;
   }
-};
+
+  // Don't show toast for auth errors (they're handled elsewhere)
+  if (error?.response?.status !== 401) {
+    toast.error(message);
+  }
+}

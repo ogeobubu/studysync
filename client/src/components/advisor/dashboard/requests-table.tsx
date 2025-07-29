@@ -204,7 +204,7 @@ export function RequestsTable({
     <div className="space-y-4">
       {/* Mobile View */}
       <div className="sm:hidden space-y-4">
-        {requests.map((request) => (
+        {requests?.map((request) => (
           <Card key={request._id} className="p-4">
             <div className="flex items-start gap-3">
               <Avatar>
@@ -288,7 +288,7 @@ export function RequestsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {requests.map((request) => (
+            {requests?.map((request) => (
               <TableRow key={request._id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -328,7 +328,7 @@ export function RequestsTable({
                       <Avatar className="h-6 w-6">
                         <AvatarImage src={request.advisor.avatar} />
                         <AvatarFallback>
-                          {request.advisor.name.charAt(0)}
+                          {request?.advisor?.name?.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <span>{request.advisor.name}</span>
@@ -469,15 +469,15 @@ function RequestDetailsModal({ isOpen, onClose, request }: {
                 <h3 className="font-medium">Assigned Advisor</h3>
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage src={request.advisor.avatar} />
+                    <AvatarImage src={request?.advisor?.avatar} />
                     <AvatarFallback>
-                      {request.advisor.name.charAt(0)}
+                      {request?.advisor?.name?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p>{request.advisor.name}</p>
+                    <p>{request?.advisor?.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {request.advisor.email}
+                      {request?.advisor?.email}
                     </p>
                   </div>
                 </div>

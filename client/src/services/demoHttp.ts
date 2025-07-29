@@ -17,23 +17,29 @@ export class DemoHttpService {
   private isDemo = true;
 
   // Simulate network delay
-  private delay(ms: number = 500) {
+  private delay(ms: number = 300) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  // Mock response wrapper
+  // Mock response wrapper - Fixed to match expected API structure
   private createResponse(data: any, message?: string) {
     return {
-      data: { data, message, success: true },
-      status: 200,
-      statusText: 'OK'
+      data: { 
+        data, 
+        message: message || 'Success',
+        success: true 
+      }
     };
   }
 
   private createErrorResponse(message: string, status: number = 400) {
     return Promise.reject({
       response: {
-        data: { message, success: false },
+        data: { 
+          data: { message, error: message },
+          message,
+          success: false 
+        },
         status,
         statusText: 'Error'
       },
@@ -61,7 +67,7 @@ export class DemoHttpService {
     localStorage.setItem('demo_current_user', JSON.stringify(user));
     localStorage.setItem('demo_token', token);
 
-    return this.createResponse({ token, user });
+    return { data: { token, user } };
   }
 
   async register(userData: any) {
@@ -302,6 +308,16 @@ export class DemoHttpService {
       return this.createErrorResponse('Course not found', 404);
     }
 
+    // Check if already registered
+    const existingReg = registrations.find((reg: any) => 
+      reg.studentId === registrationData.studentId && 
+      reg.courseId._id === registrationData.courseId
+    );
+
+    if (existingReg) {
+      return this.createErrorResponse('Already registered for this course', 400);
+    }
+
     const newRegistration = {
       _id: generateId(),
       studentId: registrationData.studentId,
@@ -394,6 +410,16 @@ export class DemoHttpService {
     
     if (!advisor) {
       return this.createErrorResponse('Advisor not found', 404);
+    }
+
+    // Check if chat already exists
+    const existingChats = getDemoData('chats');
+    const existingChat = existingChats.find((chat: any) => 
+      chat.student._id === currentUser._id && chat.advisor._id === advisorId
+    );
+
+    if (existingChat) {
+      return this.createResponse(existingChat);
     }
 
     const chats = getDemoData('chats');
