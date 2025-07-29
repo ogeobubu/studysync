@@ -29,7 +29,7 @@ export default function RegisterPage() {
     options: {
       onSuccess: () => {
         toast.success('Account created successfully!');
-        navigate('/verify');
+        navigate('/');
       },
       onError: (error) => {
         toast.error(error.response.data.message);
