@@ -10,12 +10,12 @@ const {
   registerUser
 } = require('../controllers/authController');
 
+router.post('/register', registerUser);
+router.post('/login', loginUser);
+router.post('/verify-email', verifyEmail);
+router.post('/resend-verification', resendVerificationEmail);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.post('/resend-password-otp', resendPasswordResetOTP);
-router.post('/resend-verification', resendVerificationEmail);
-router.post('/verify-email', verifyEmail);
-router.post('/login', loginUser);
-router.post('/register', registerUser);
 
 module.exports = router;
