@@ -82,6 +82,55 @@ export default function Sidebar() {
     </>
   );
 
+  const renderAdvisorMenu = () => (
+    <>
+      <div className="px-3 pt-4 pb-1">
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Distributed</h3>
+      </div>
+      
+      <NavLink
+        to="/advisor/advising-requests"
+        currentPath={location.pathname}
+        icon={<ClipboardList className="h-5 w-5" />}
+      >
+        Advising Requests
+      </NavLink>
+      <NavLink
+        to="/advisor/students"
+        currentPath={location.pathname}
+        icon={<GraduationCap className="h-5 w-5" />}
+      >
+        Students
+      </NavLink>
+      
+      <div className="px-3 pt-4 pb-1">
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Management</h3>
+      </div>
+      
+      <NavLink
+        to="/advisor/dashboard"
+        currentPath={location.pathname}
+        icon={<Home className="h-5 w-5" />}
+      >
+        Dashboard
+      </NavLink>
+      <NavLink
+        to="/chats"
+        currentPath={location.pathname}
+        icon={<MessagesSquare className="h-5 w-5" />}
+      >
+        Messages
+      </NavLink>
+      <NavLink
+        to="/advisor/settings"
+        currentPath={location.pathname}
+        icon={<Settings className="h-5 w-5" />}
+      >
+        Profile Settings
+      </NavLink>
+    </>
+  );
+
   const renderAdminMenu = () => (
     <>
       <div className="px-3 pt-4 pb-1">
@@ -151,7 +200,7 @@ export default function Sidebar() {
       </div>
       
       <nav className="space-y-1 flex-1">
-        {user?.role === "admin" ? renderAdminMenu() : renderStudentMenu()}
+        {user?.role === "admin" ? renderAdminMenu() : user?.role === "advisor" ? renderAdvisorMenu() : renderStudentMenu()}
       </nav>
 
       <div className="mt-auto p-4">

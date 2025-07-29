@@ -12,6 +12,7 @@ import MainLayout from '../layouts/MainLayout';
 import ChatLayout from '../layouts/ChatLayout';
 
 import AdminRoutes from './AdminRoutes';
+import AdvisorRoutes from './AdvisorRoutes';
 import StudentRoutes from './StudentRoutes';
 
 import ChatListPage from '../pages/chat/ChatListPage';
@@ -36,6 +37,10 @@ export default function AppRoutes() {
 
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/admin/*" element={<AdminRoutes />} />
+      </Route>
+
+      <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+        <Route path="/advisor/*" element={<AdvisorRoutes />} />
       </Route>
 
       <Route element={<ProtectedRoute><ChatLayout /></ProtectedRoute>}>

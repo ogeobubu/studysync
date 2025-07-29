@@ -332,3 +332,47 @@ exports.getSystemOverview = asyncHandler(async (req, res, next) => {
     }
   });
 });
+
+exports.getAdvisorOverview = asyncHandler(async (req, res, next) => {
+  const advisorId = req.user._id;
+  
+  // Basic counts
+  const assignedStudents = await User.countDocuments({ 
+    advisor: advisorId,
+    role: 'student',
+    active: true
+  });
+  
+  const upcomingSessions = await Advising.countDocuments({
+    advisor: advisorId,
+    status: 'Scheduled',
+    date: { $gte: new Date() }
+  });
+  
+  const recentCompleted = await Advising.countDocuments({
+    advisor: advisorId,
+    status: 'Completed',
+    date: { 
+      $gte: new Date(new Date().setDate(new Date().getDate()-30)),
+      $lte: new Date() 
+    }
+  });
+  
+  // More complex analytics
+  const commonTopics = await Advising.aggregate([
+    { $match: { advisor: advisorId } },
+    { $group: { _id: "$topic", count: { $sum: 1 } } },
+    { $sort: { count: -1 } },
+    { $limit: 3 }
+  ]);
+  
+  res.status(200).json({
+    success: true,
+    data: {
+      assignedStudents,
+      upcomingSessions,
+      recentCompleted,
+      commonTopics
+    }
+  });
+});

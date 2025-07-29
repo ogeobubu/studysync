@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Redirect based on role
         const redirectMap = {
           [Role.ADMIN]: '/admin/dashboard',
-          [Role.ADVISOR]: '/advisor/requests',
+          [Role.ADVISOR]: '/advisor/dashboard',
           [Role.STUDENT]: '/student/dashboard',
         };
 

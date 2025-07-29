@@ -7,29 +7,35 @@ const {
   assignAdvisor,
   deleteAdvisingRequest,
   getPendingRequests,
-  getRequestById
+  getRequestById,
+  getAdvisorPendingRequests,
+  updateRequestStatus
 } = require("../controllers/advisingController");
 const { protect, authorize } = require("../middlewares/authMiddleware");
 
-// Create advising request
+// ======================
+//  STUDENT ROUTES
+// ======================
 router.post("/", protect, authorize("student"), createAdvisingRequest);
-
-// Get advising requests for the logged-in student
 router.get("/my", protect, authorize("student"), getStudentAdvisingRequests);
 
-// Get all advising requests (for admin and advisors)
+// ======================
+//  REQUEST MANAGEMENT
+// ======================
 router.get("/", protect, authorize("advisor", "admin"), getAllAdvisingRequests);
-
-// Get pending requests (for dashboard)
 router.get("/pending", protect, authorize("admin", "advisor"), getPendingRequests);
-
-// Get single request by ID
 router.get("/:id", protect, getRequestById);
 
-// Assign advisor to an advising request
-router.patch("/:id/assign", protect, authorize("admin", "advisor"), assignAdvisor);
+// ======================
+//  ADVISOR-SPECIFIC ROUTES
+// ======================
+router.get("/advisor/my-pending", protect, authorize("advisor"), getAdvisorPendingRequests);
 
-// Delete an advising request
-router.delete('/:id', protect, authorize('admin'), deleteAdvisingRequest);
+// ======================
+//  REQUEST ACTIONS
+// ======================
+router.patch("/:id/assign", protect, authorize("admin", "advisor"), assignAdvisor);
+router.patch("/:id/status", protect, authorize("admin", "advisor"), updateRequestStatus);
+router.delete("/:id", protect, authorize("admin", "student"), deleteAdvisingRequest);
 
 module.exports = router;

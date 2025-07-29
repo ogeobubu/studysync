@@ -29,9 +29,9 @@ export default function LoginPage() {
 
 
     try {
-      await login(formData.email, formData.password); // Wait for login to complete
+      await login(formData.email, formData.password);
     } catch (error) {
-      toast.error("Login failed, please try again."); // Handle login failure
+      toast.error("Login failed, please try again.");
     }
   };
 
