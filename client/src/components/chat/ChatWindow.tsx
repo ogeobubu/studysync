@@ -92,8 +92,8 @@ export const ChatWindow = () => {
         );
     }
 
-    const { chat, messages } = chatData.data;
-const currentUserIsStudent = messages.length > 0 ? messages[0]?.sender._id === chat.student?._id : false;
+    const { chat, messages } = chatData?.data;
+const currentUserIsStudent = messages?.length > 0 ? messages[0]?.sender?._id === chat.student?._id : false;
 let otherUser = currentUserIsStudent ? chat.student : chat.advisor;
 
 if (messages.length === 0) {
@@ -131,9 +131,9 @@ if (messages.length === 0) {
                 ) : (
                     messages.map((msg) => (
                         <MessageBubble 
-                            key={msg._id} 
+                            key={msg?._id} 
                             message={msg} 
-                            isCurrentUser={msg.sender._id === chat.student?._id} 
+                            isCurrentUser={msg.sender?._id === chat.student?._id} 
                         />
                     ))
                 )}
@@ -180,13 +180,13 @@ const MessageBubble = ({
             <div className="flex items-center space-x-2 mb-1">
                 <Avatar className="h-6 w-6">
                     <AvatarImage 
-                        src={message.sender.profilePhoto && message.sender.profilePhoto !== "default.jpg" ? message.sender.profilePhoto : noImage} 
+                        src={message.sender?.profilePhoto && message.sender?.profilePhoto !== "default.jpg" ? message.sender?.profilePhoto : noImage} 
                     />
                     <AvatarFallback>
-                        {message.sender.name.charAt(0)}
+                        {message.sender?.name?.charAt(0)}
                     </AvatarFallback>
                 </Avatar>
-                <span className="font-medium">{message.sender.name}</span>
+                <span className="font-medium">{message.sender?.name}</span>
             </div>
             <p>{message.content}</p>
             <p className={`text-xs mt-1 ${isCurrentUser ? 'text-white/80' : 'text-gray-500'}`}>

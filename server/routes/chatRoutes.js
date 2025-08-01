@@ -19,7 +19,7 @@ router.get('/:chatId', protect, getChatMessages);
 router.post('/:chatId/messages', protect, sendMessage);
 
 // Start new chat (student initiates with advisor)
-router.post('/start', protect, authorize('student', "admin"), startChat);
+router.post('/start', protect, authorize('student', "advisor"), startChat);
 
 // Close chat
 router.patch('/:chatId/close', protect, closeChat);

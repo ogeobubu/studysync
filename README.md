@@ -81,8 +81,8 @@ Experience Academic Connect without setting up a backend server! Our demo mode p
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/academic-connect.git
-   cd academic-connect
+   git clone https://github.com/yourusername/studysync.git
+   cd studysync
    ```
 
 2. **Install dependencies**
@@ -107,7 +107,7 @@ Experience Academic Connect without setting up a backend server! Our demo mode p
    Create a `.env` file in the server directory (if using backend):
    ```env
    PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/academic-connect
+   MONGODB_URI=mongodb://localhost:27017/studysync
    JWT_SECRET=your-super-secret-jwt-key
    EMAIL_HOST=smtp.gmail.com
    EMAIL_PORT=587
@@ -160,7 +160,7 @@ Experience Academic Connect without setting up a backend server! Our demo mode p
 ## 🗂️ Project Structure
 
 ```
-academic-connect/
+studysync/
 ├── client/                          # React frontend application
 │   ├── public/                      # Static assets
 │   ├── src/
