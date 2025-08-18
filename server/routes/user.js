@@ -40,7 +40,7 @@ router.route("/me/settings")
 //  USER MANAGEMENT ROUTES
 // ======================
 router.route("/")
-  .get(authorize("advisor", "admin"), getUsers);
+  .get(authorize("advisor", "admin", "student"), getUsers);
 
 router.route("/:id")
   .get(authorize("advisor", "admin"), getUser);
