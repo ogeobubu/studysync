@@ -13,6 +13,7 @@ const userRoutes = require("./routes/user");
 const registrationRoute = require("./routes/registration");
 const recommendationRoute = require("./routes/recommendations");
 const chatRoutes = require("./routes/chatRoutes");
+const seedCourses = require('./seedCourses'); // expects exported function
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -30,8 +31,6 @@ const createApp = () => {
 
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-
-  connectDB(process.env.MONGO_URI);
 
   app.use("/api/auth", authRoutes);
   app.use("/api/notifications", notifications);
@@ -54,13 +53,13 @@ const createApp = () => {
     });
   }
 
-app.use((err, req, res, next) => {
-  if (err.message.includes('path-to-regexp')) {
-    console.error('Invalid route path detected');
-    return res.status(500).json({ error: 'Server configuration error' });
-  }
-  errorHandler(err, req, res, next);
-});
+  app.use((err, req, res, next) => {
+    if (err && err.message && err.message.includes('path-to-regexp')) {
+      console.error('Invalid route path detected');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+    errorHandler(err, req, res, next);
+  });
 
   return app;
 };
@@ -69,17 +68,36 @@ const app = createApp();
 const PORT = process.env.PORT || 5001;
 const HOST = process.env.HOST || "0.0.0.0";
 
-app.listen(PORT, () => {
-  console.log(`Server running on ${HOST}:${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-});
+async function start() {
+  try {
+    // Connect DB and wait till connected
+    await connectDB(process.env.MONGO_URI);
 
-process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection:", err);
-  process.exit(1);
-});
+    // Automatically seed courses on startup.
+    // By default seeding only runs when courses collection is empty.
+    // To force reseed (CAUTION): set FORCE_SEED=true in your .env
+    try {
+      const force = process.env.FORCE_SEED === 'true';
+      const seedResult = await seedCourses({ useExistingConnection: true, force });
+      if (seedResult && seedResult.skipped) {
+        console.log('Seeding skipped (existing data).');
+      } else {
+        console.log('Seeding done on startup.');
+      }
+    } catch (seedErr) {
+      // Log but don't crash the whole app. Remove this if you want startup to fail on seeding error.
+      console.error('Seeding failed on startup:', seedErr);
+    }
 
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err);
-  process.exit(1);
-});
+    // Start listening AFTER seeding attempt
+    app.listen(PORT, HOST, () => {
+      console.log(`Server running on ${HOST}:${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+    });
+  } catch (err) {
+    console.error('Failed to start app:', err);
+    process.exit(1);
+  }
+}
+
+start();

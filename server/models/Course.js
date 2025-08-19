@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const courseSchema = new mongoose.Schema({
-  code: { type: String, required: true, unique: true, uppercase: true },
+  code: { type: String, required: true, uppercase: true },
   title: { type: String, required: true },
   level: { type: String, enum: ['Part I', 'Part II', 'Part III', 'Part IV', 'Part V'], required: true },
   programs: { 
@@ -9,7 +9,7 @@ const courseSchema = new mongoose.Schema({
     enum: ['Computer Science', 'Computer Science with Mathematics', 'Computer Science with Economics', 'Computer Engineering'],
     required: true 
   },
-  credits: { type: Number, required: true, min: 1, max: 6 },
+  credits: { type: Number, required: true, min: 0, max: 6 },
   prerequisites: [{ type: String }],
   isElective: { type: Boolean, default: false },
   description: String,
