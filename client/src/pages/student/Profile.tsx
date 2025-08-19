@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext"
+import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
 import {
   GraduationCap,
@@ -70,7 +70,7 @@ const programs = [
 const levels = ["Part I", "Part II", "Part III", "Part IV", "Part V"];
 
 export default function StudentProfilePage() {
-const { setUser } = useAuth()
+  const { setUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -182,7 +182,7 @@ const { setUser } = useAuth()
         setProfile(res.data);
         setIsEditing(false);
         toast.success("Profile updated successfully!");
-        setUser(res.data)
+        setUser(res.data);
       },
     });
   };
@@ -191,12 +191,14 @@ const { setUser } = useAuth()
     return <div className="p-6">Loading profile...</div>;
 
   return (
-    <div className="p-6 space-y-8">
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex justify-between items-start">
+    <div className="p-4 md:p-6 space-y-8">
+      <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div className="w-full space-y-6">
             {isEditing ? (
               <>
+                {/* Editable fields */}
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <Input
@@ -243,7 +245,7 @@ const { setUser } = useAuth()
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
                     <Select
@@ -307,8 +309,8 @@ const { setUser } = useAuth()
               </>
             ) : (
               <div>
-                <h1 className="text-2xl font-bold">{profile.name}</h1>
-                <div className="flex items-center gap-4 mt-2 text-gray-600">
+                <h1 className="text-xl md:text-2xl font-bold">{profile.name}</h1>
+                <div className="flex flex-wrap gap-4 mt-2 text-gray-600">
                   <div className="flex items-center gap-1">
                     <GraduationCap className="h-4 w-4" />
                     <span>{profile.program || "Program N/A"}</span>
@@ -322,7 +324,8 @@ const { setUser } = useAuth()
             )}
           </div>
 
-          <div className="flex gap-2 ml-4 mt-2">
+          {/* Edit buttons */}
+          <div className="flex flex-row md:flex-col gap-2 md:ml-4">
             {isEditing ? (
               <>
                 <Button
@@ -355,8 +358,8 @@ const { setUser } = useAuth()
           </div>
         </div>
 
-        {/* Enhanced Academic Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+        {/* Academic Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
@@ -365,7 +368,7 @@ const { setUser } = useAuth()
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl md:text-2xl font-bold">
                 {academicStats.gpa.toFixed(2)}
               </div>
               <Progress
@@ -383,7 +386,7 @@ const { setUser } = useAuth()
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl md:text-2xl font-bold">
                 {academicStats.cgpa.toFixed(2)}
               </div>
               <Progress
@@ -401,7 +404,7 @@ const { setUser } = useAuth()
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl md:text-2xl font-bold">
                 {academicStats.completedCredits}
                 <span className="text-sm font-normal text-gray-500 ml-1">
                   / {academicStats.totalCredits}
@@ -426,7 +429,7 @@ const { setUser } = useAuth()
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold capitalize">
+              <div className="text-xl md:text-2xl font-bold capitalize">
                 {academicStats.standing}
               </div>
               <div className="text-xs text-gray-500 mt-2">
@@ -438,15 +441,15 @@ const { setUser } = useAuth()
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 md:flex-row flex-col justifify-between items-center">
-        <Link to="/chats">
-          <Button className="h-12">
+      <div className="flex flex-col md:flex-row gap-3 md:justify-between md:items-center">
+        <Link to="/chats" className="w-full md:w-auto">
+          <Button className="h-12 w-full md:w-auto">
             <Mail className="h-5 w-5 mr-2" />
             Contact Advisor
           </Button>
         </Link>
-        <Link to="/student/academics">
-          <Button className="h-12">
+        <Link to="/student/academics" className="w-full md:w-auto">
+          <Button className="h-12 w-full md:w-auto">
             <NotebookPen className="h-5 w-5 mr-2" />
             View Academic Record
           </Button>
